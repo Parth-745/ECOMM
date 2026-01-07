@@ -271,9 +271,9 @@ const AdminInventory = () => {
                             onChange={(e) => setPriceRangeFilter(e.target.value)}
                         >
                             <option value="">All Prices</option>
-                            <option value="under50">Under $50</option>
-                            <option value="50to100">$50 - $100</option>
-                            <option value="over100">Over $100</option>
+                            <option value="under50">Under ₹50</option>
+                            <option value="50to100">₹50 - ₹100</option>
+                            <option value="over100">Over ₹100</option>
                         </select>
                     </div>
                     
@@ -349,7 +349,7 @@ const AdminInventory = () => {
                                     </td>
                                     <td className="py-3 px-4 font-medium">{product.name}</td>
                                     <td className="py-3 px-4 capitalize">{product.category}</td>
-                                    <td className="py-3 px-4">${product.price.toFixed(2)}</td>
+                                    <td className="py-3 px-4">₹{product.price.toFixed(2)}</td>
                                     <td className={`py-3 px-4 ${
                                         product.quantity === 0 ? 'text-red-600' : 
                                         product.quantity < 10 ? 'text-yellow-600' : 'text-green-600'
@@ -412,7 +412,7 @@ const AdminInventory = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 mb-4">
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Price ($)</label>
+                                        <label className="block text-gray-700 mb-2">Price (₹)</label>
                                         <input
                                             type="number"
                                             name="price"

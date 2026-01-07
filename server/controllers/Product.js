@@ -1,68 +1,67 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
-const sampleShoes=require('../ProductData');
+const sampleGroceries=require('../ProductData');
 const Order = require('../models/Order');
 const User = require('../models/User');
 
-// exports.seedDatabase = async (req, res) => {
-//   try {
-//     return res.json({success:true})
-//     // Clear existing data (optional)
-//     await Product.deleteMany({});
-//     await Category.deleteMany({});
+exports.seedDatabase = async (req, res) => {
+  try {
 
-//     // Process each sample shoe
-//     for (const shoe of sampleShoes) {
-//       // Create or update product
-//       const newProduct = new Product({
-//         name: shoe.name,
-//         description: shoe.description,
-//         price: shoe.price,
-//         imageUrl: shoe.imageUrl,
-//         category: shoe.category,
-//         quantity: shoe.quantity,
-//         ratings: shoe.ratings,
-//         unitSold: shoe.unitSold,
-//         offer: shoe.offer || ''
-//       });
+    await Product.deleteMany({});
+    await Category.deleteMany({});
 
-//       await newProduct.save();
+    // Process each sample shoe
+    for (const shoe of sampleGroceries) {
+      // Create or update product
+      const newProduct = new Product({
+        name: shoe.name,
+        description: shoe.description,
+        price: shoe.price,
+        imageUrl: shoe.imageUrl,
+        category: shoe.category,
+        quantity: shoe.quantity,
+        ratings: shoe.ratings,
+        unitSold: shoe.unitSold,
+        offer: shoe.offer || ''
+      });
 
-//       // Handle category
-//       let category = await Category.findOne({ name: shoe.category });
+      await newProduct.save();
+
+      // Handle category
+      let category = await Category.findOne({ name: shoe.category });
       
-//       if (!category) {
-//         // Create new category if it doesn't exist
-//         category = new Category({
-//           name: shoe.category,
-//           products: [newProduct._id],
-//           description: `${shoe.category} shoes collection`,
-//           imageUrl: shoe.imageUrl
-//         });
-//       } else {
-//         // Add product to existing category
-//         if (!category.products.includes(newProduct._id)) {
-//           category.products.push(newProduct._id);
-//         }
-//       }
+      if (!category) {
+        // Create new category if it doesn't exist
+        category = new Category({
+          name: shoe.category,
+          products: [newProduct._id],
+          description: `${shoe.category} shoes collection`,
+          imageUrl: shoe.imageUrl
+        });
+      } else {
+        // Add product to existing category
+        if (!category.products.includes(newProduct._id)) {
+          category.products.push(newProduct._id);
+        }
+      }
       
-//       await category.save();
-//     }
+      await category.save();
+    }
 
-//     return res.status(200).json({
-//       success: true,
-//       message: "Database seeded successfully with sample products and categories",
-//       productCount: sampleShoes.length
-//     });
+    return res.status(200).json({
+      success: true,
+      message: "Database seeded successfully with sample products and categories",
+      productCount: sampleGroceries.length
+    });
 
-//   } catch (error) {
-//     console.error("Error seeding database:", error);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Internal server error while seeding database"
-//     });
-//   }
-// };
+  } catch (error) {
+    console.error("Error seeding database:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while seeding database"
+    });
+  }
+};
 
 exports.addProduct = async (req, res) => {
     try {

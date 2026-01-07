@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 const ShowProducts = ({ visibleProducts }) => {
     const { user, setcart } = useContext(FirebaseContext);
     const navigate = useNavigate();
-
     function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -99,7 +98,7 @@ const ShowProducts = ({ visibleProducts }) => {
                                     <p className="text-gray-600">{product.category}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-lg font-bold">${product.price}</p>
+                                    <p className="text-lg font-bold">₹{product.price}</p>
                                     <div className="flex items-center justify-end mt-1">
                                         {[1, 2, 3, 4, 5].map((star) => {
                                             const rating = product.ratings || 0;

@@ -35,7 +35,7 @@ function App() {
         <Route path='/profile/settings' element={<ProfileSettings/>}/>
         <Route path='/admin' element={<AdminLanding/>}/>
         <Route path='/adminlogin' element={<AdminLogin/>}/>
-        <Route path='/about' element={<About/>}/>
+        {/* <Route path='/about' element={<About/>}/> */}
         <Route path='/admin/inventory' element={<AdminInventory/>}/>
         <Route path='*' element={<h1>Page Not Found</h1>}/>
       </Routes>

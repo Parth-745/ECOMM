@@ -7,7 +7,7 @@ const CategoryCard = ({ category }) => {
   return (
     <div className="group relative overflow-hidden rounded-lg bg-gray-100 h-64 cursor-pointer" onClick={()=>navigate('/products/'+category.name.toLowerCase())}>
       <img loading='lazy' 
-        src={`/${category.name}.png`} 
+        src={category.imageUrl} 
         alt={category.name}
         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
       />

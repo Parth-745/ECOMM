@@ -53,11 +53,11 @@ const Home = () => {
           <SwiperSlide>
             <div className="relative bg-gray-200 overflow-hidden h-[80vh]">
               <img
-                src="/hero3.png"
+                src="/banner-mobile.jpg"
                 alt="Shoe Collection"
                 className="absolute inset-0 w-full h-full object-cover opacity-70"
               />
-              <div className="relative z-10 flex items-center h-full">
+              {/* <div className="relative z-10 flex items-center h-full">
                 <div className="container mx-auto px-6 text-[#1A2433]">
                   <span className="text-sm uppercase tracking-widest">
                     Limited Edition
@@ -74,67 +74,43 @@ const Home = () => {
                     </button>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </SwiperSlide>
           
           <SwiperSlide>
-            <div className="relative bg-gray-900 h-[80vh] overflow-hidden flex items-center px-10">
-              
+            <div className="relative overflow-hidden h-[80vh]">
               <img
-                src="/hero4.png"
-                alt="New Arrivals"
-                className="absolute right-0 top-0 w-1/2 h-full object-cover z-0"
+                src="/banner.jpg"
+                alt="Shoe Collection"
+                className="absolute inset-0 w-full h-full object-contain opacity-70"
               />
-
-              <div className="relative z-10 max-w-lg">
-                <h1 className="text-6xl font-extrabold mb-5 text-white drop-shadow-lg">
-                  FRESH DROPS
-                </h1>
-                <p className="text-xl mb-8 text-indigo-100 opacity-90">
-                  Just in: Sleek silhouettes and next-gen comfort for everyday icons. Gear up for the latest wave.
-                </p>
-                <button className="bg-white text-gray-900 px-10 py-3 rounded font-bold hover:bg-indigo-100 transition">
-                  Explore Now
-                </button>
-              </div>
-            </div>
-          </SwiperSlide>
-
-          <SwiperSlide>
-            <div className="relative h-[80vh] overflow-hidden flex items-center px-10">
-              <div className="absolute left-0 top-0 w-full h-full">
-                        <img
-                          src="/per.png"
-                          alt="Shoe Collection"
-                          className="absolute inset-0 w-full h-full object-cover opacity-95"
-                        />
-              </div>
-              <div className="container mx-auto z-10">
-                <div className="max-w-lg ml-auto text-right text-white">
-                  <h1 className="text-6xl font-extrabold mb-5 tracking-tighter drop-shadow-lg">
-                    URBAN EDGE
+              {/* <div className="relative z-10 flex items-center h-full">
+                <div className="container mx-auto px-6 text-[#1A2433]">
+                  <span className="text-sm uppercase tracking-widest">
+                    Limited Edition
+                  </span>
+                  <h1 className="text-5xl md:text-7xl font-bold my-4">
+                    REDEFINE YOUR RUN
                   </h1>
-                  <p className="text-xl mb-8 opacity-90">
-                    Step bold with our cutting-edge street sneakers, built for style and comfort in the city.
+                  <p className="text-xl max-w-xl mb-8">
+                    Performance meets style in our newest running collection
                   </p>
-                  <button className="bg-white text-black px-10 py-3 rounded font-bold hover:bg-gray-200 transition">
-                    See the Drop
-                  </button>
+                  <div className="flex gap-4">
+                    <button className="bg-gray-500 text-white px-8 py-3 font-medium hover:bg-gray-600 transition rounded-md">
+                      Get the Look
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </SwiperSlide>
-
         </Swiper>
 
         {/* Categories Section */}
         <section className="my-16 px-4 sm:px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Explore Our Collections</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Find the perfect pair for every occasion
-            </p>
+            <h2 className="text-3xl font-bold mb-4">Categories</h2>
           </div>
 
           {/* Mobile Swiper (hidden on desktop) */}
@@ -192,7 +168,6 @@ const Home = () => {
         <section className="mt-16 px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Our Featured Products</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Discover our latest collection of premium footwear</p>
           </div>
 
 
@@ -210,7 +185,7 @@ const Home = () => {
         {/* Shipping & Returns Section */}
         <section className="py-10 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 text-center">
               {/* Free Shipping */}
               <div className="p-6">
                 <div className="mx-auto h-12 w-12 flex items-center justify-center bg-black rounded-full mb-4">
@@ -219,18 +194,7 @@ const Home = () => {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium mb-2">Free Shipping</h3>
-                <p className="text-gray-600">On all orders over $50</p>
-              </div>
-
-              {/* Easy Returns */}
-              <div className="p-6">
-                <div className="mx-auto h-12 w-12 flex items-center justify-center bg-black rounded-full mb-4">
-                  <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium mb-2">Easy Returns</h3>
-                <p className="text-gray-600">30-day return policy</p>
+                <p className="text-gray-600">On all orders over ₹50</p>
               </div>
 
               {/* Customer Support */}
@@ -255,29 +219,20 @@ const Home = () => {
                 <p className="text-gray-600">SSL encrypted checkout</p>
               </div>
 
-              {/* Eco-Friendly - New Element */}
-              <div className="p-6">
-                <div className="mx-auto h-12 w-12 flex items-center justify-center bg-black rounded-full mb-4">
-                  <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium mb-2">Eco-Friendly</h3>
-                <p className="text-gray-600">Sustainable materials</p>
-              </div>
+
             </div>
           </div>
         </section>
 
 
         {/* Limited Offer Banner */}
-        <section className="py-10 bg-gradient-to-r from-red-500 to-orange-500 text-white">
+        {/* <section className="py-10 bg-gradient-to-r from-red-500 to-orange-500 text-white">
           <div className="max-w-7xl mx-aut px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold mb-4">Last Chance - Summer Sale Ends Soon!</h2>
             <p className="text-xl mb-6">Get 20% off all summer collection shoes</p>
             
             <div className="flex justify-center items-center space-x-4 mb-8">
-              {/* Countdown Timer */}
+             
               <div className="bg-black bg-opacity-20 rounded-lg p-3 min-w-[70px]">
                 <div className="text-2xl font-bold">02</div>
                 <div className="text-sm">Days</div>
@@ -298,7 +253,7 @@ const Home = () => {
               <p className="font-semibold">Use Code : <span className="font-bold">SUMMER678</span></p>
             </div>
           </div>
-        </section>
+        </section> */}
       </main>
 
       <Footer/>

@@ -1,310 +1,338 @@
-const sampleShoes = [
+const sampleGroceries = [
+  // Rice & Grains
   {
-    name: "Nike Air Max 270",
-    description: "Revolutionary cushioning with the biggest Air unit yet for all-day comfort.",
-    price: 150.00,
-    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-    category: "Sneakers",
-    quantity: 50,
-    ratings: 4.5,
-    unitSold: 120,
+    name: "Basmati Rice 5kg",
+    description: "Premium long-grain basmati rice with rich aroma and fluffy texture.",
+    price: 899,
+    imageUrl: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80",
+    category: "Rice & Grains",
+    quantity: 100,
+    ratings: 4.6,
+    unitSold: 320,
     offer: "10% off"
   },
   {
-    name: "Adidas Ultraboost 21",
-    description: "Responsive cushioning meets energy return for your best run yet.",
-    price: 180.00,
-    imageUrl: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28",
-    category: "Running",
-    quantity: 35,
+    name: "Brown Rice 2kg",
+    description: "Organic brown rice packed with fiber and nutrients.",
+    price: 340,
+    imageUrl: "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=800&q=80",
+    category: "Rice & Grains",
+    quantity: 85,
+    ratings: 4.5,
+    unitSold: 180
+  },
+  {
+    name: "Quinoa 500g",
+    description: "High-protein quinoa grain for healthy meals.",
+    price: 425,
+    imageUrl: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80",
+    category: "Rice & Grains",
+    quantity: 45,
     ratings: 4.7,
     unitSold: 95,
-    offer: "Free shipping"
+    offer: "New arrival"
   },
+  
+  // Atta & Flour
   {
-    name: "Timberland Premium Boot",
-    description: "Waterproof leather boots with premium construction for durability.",
-    price: 220.00,
-    imageUrl: "https://images.unsplash.com/photo-1560769629-975ec94e6a86",
-    category: "Boots",
-    quantity: 25,
-    ratings: 4.8,
-    unitSold: 80
-  },
-  {
-    name: "Converse Chuck Taylor All Star",
-    description: "Classic canvas sneakers with iconic design and comfortable fit.",
-    price: 65.00,
-    imageUrl: "https://images.unsplash.com/photo-1460353581641-37baddab0fa2",
-    category: "Casual",
-    quantity: 100,
-    ratings: 4.3,
-    unitSold: 200,
-    offer: "Buy 1 Get 1 50% off"
-  },
-  {
-    name: "Birkenstock Arizona Sandals",
-    description: "Comfortable cork footbed with adjustable straps for perfect fit.",
-    price: 99.95,
-    imageUrl: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77",
-    category: "Sandals",
-    quantity: 40,
-    ratings: 4.6,
-    unitSold: 75
-  },
-  {
-    name: "Vans Old Skool",
-    description: "Classic skate shoes with durable canvas and signature side stripe.",
-    price: 60.00,
-    imageUrl: "https://images.unsplash.com/photo-1556906781-9a412961c28c",
-    category: "Skate",
-    quantity: 60,
-    ratings: 4.4,
-    unitSold: 150
-  },
-  {
-    name: "Dr. Martens 1460 Boot",
-    description: "Iconic 8-eye boot with air-cushioned sole and durable leather.",
-    price: 150.00,
-    imageUrl: "https://images.unsplash.com/photo-1562273138-f46be4ebdf33",
-    category: "Boots",
-    quantity: 30,
-    ratings: 4.7,
-    unitSold: 65
-  },
-  {
-    name: "New Balance 574",
-    description: "Classic running-inspired lifestyle sneaker with ENCAP cushioning.",
-    price: 84.99,
-    imageUrl: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28",
-    category: "Casual",
-    quantity: 45,
-    ratings: 4.5,
-    unitSold: 110
-  },
-  {
-    name: "Puma RS-X",
-    description: "Bold retro-inspired sneakers with chunky silhouette and cushioned comfort.",
-    price: 110.00,
-    imageUrl: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519",
-    category: "Sneakers",
-    quantity: 40,
-    ratings: 4.2,
-    unitSold: 85
-  },
-  {
-    name: "Reebok Classic Leather",
-    description: "Timeless leather sneakers with soft cushioning and vintage appeal.",
-    price: 75.00,
-    imageUrl: "https://images.unsplash.com/photo-1605348532760-6753d2c43329",
-    category: "Casual",
-    quantity: 55,
-    ratings: 4.3,
-    unitSold: 120
-  },
-  {
-    name: "ASICS Gel-Kayano 27",
-    description: "Premium stability running shoes with dynamic support and cushioning.",
-    price: 160.00,
-    imageUrl: "https://images.unsplash.com/photo-1543508282-6319a3e2621f",
-    category: "Running",
-    quantity: 30,
-    ratings: 4.8,
-    unitSold: 70
-  },
-  {
-    name: "Salomon XA Pro 3D",
-    description: "Trail running shoes with aggressive grip and protective design.",
-    price: 130.00,
-    imageUrl: "https://images.unsplash.com/photo-1460353581641-37baddab0fa2",
-    category: "Trail Running",
-    quantity: 25,
-    ratings: 4.6,
-    unitSold: 45
-  },
-  {
-    name: "Crocs Classic Clog",
-    description: "Lightweight, comfortable clog with ventilation ports and Croslite™ material.",
-    price: 49.99,
-    imageUrl: "https://images.unsplash.com/photo-1595341888016-a392ef81b7de",
-    category: "Casual",
+    name: "Whole Wheat Atta 10kg",
+    description: "High-quality whole wheat flour for soft and healthy rotis.",
+    price: 545,
+    imageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80",
+    category: "Atta & Flour",
     quantity: 80,
-    ratings: 4.0,
-    unitSold: 180,
-    offer: "30% off"
-  },
-  {
-    name: "Hoka One One Bondi 7",
-    description: "Maximum cushioning running shoes with meta-rocker technology.",
-    price: 150.00,
-    imageUrl: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519",
-    category: "Running",
-    quantity: 20,
     ratings: 4.7,
-    unitSold: 55
+    unitSold: 410
   },
   {
-    name: "Gucci Ace Sneaker",
-    description: "Luxury sneakers with leather construction and iconic web stripe.",
-    price: 650.00,
-    imageUrl: "https://images.unsplash.com/photo-1560769629-975ec94e6a86",
-    category: "Luxury",
-    quantity: 10,
-    ratings: 4.9,
-    unitSold: 25
-  },
-  {
-    name: "Skechers Memory Foam Walkers",
-    description: "Comfortable walking shoes with responsive memory foam cushioning.",
-    price: 79.95,
-    imageUrl: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28",
-    category: "Walking",
-    quantity: 40,
-    ratings: 4.4,
-    unitSold: 90
-  },
-  {
-    name: "Under Armour Curry 8",
-    description: "High-performance basketball shoes with responsive cushioning.",
-    price: 140.00,
-    imageUrl: "https://images.unsplash.com/photo-1543508282-6319a3e2621f",
-    category: "Basketball",
-    quantity: 25,
+    name: "Multigrain Atta 5kg",
+    description: "Nutritious blend of wheat, oats, and millets.",
+    price: 395,
+    imageUrl: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&q=80",
+    category: "Atta & Flour",
+    quantity: 60,
     ratings: 4.6,
-    unitSold: 60
+    unitSold: 225
   },
+  
+  // Pulses & Lentils
   {
-    name: "Merrell Moab 2 Vent",
-    description: "Breathable hiking shoes with Vibram traction and air cushion.",
-    price: 119.95,
-    imageUrl: "https://images.unsplash.com/photo-1460353581641-37baddab0fa2",
-    category: "Hiking",
-    quantity: 30,
-    ratings: 4.7,
-    unitSold: 50
-  },
-  {
-    name: "Sperry Top-Sider",
-    description: "Classic boat shoes with non-marking rubber soles and leather construction.",
-    price: 89.95,
-    imageUrl: "https://images.unsplash.com/photo-1562273138-f46be4ebdf33",
-    category: "Boat Shoes",
-    quantity: 35,
+    name: "Toor Dal 1kg",
+    description: "Unpolished toor dal rich in protein and nutrients.",
+    price: 185,
+    imageUrl: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=800&q=80",
+    category: "Pulses & Lentils",
+    quantity: 120,
     ratings: 4.5,
-    unitSold: 75
+    unitSold: 260,
+    offer: "5% off"
   },
   {
-    name: "Brooks Ghost 13",
-    description: "Neutral running shoes with DNA LOFT cushioning for smooth transitions.",
-    price: 130.00,
-    imageUrl: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519",
-    category: "Running",
-    quantity: 25,
+    name: "Moong Dal 1kg",
+    description: "Green moong dal for healthy soups and curries.",
+    price: 165,
+    imageUrl: "https://images.unsplash.com/photo-1601997187592-72d854e230fb?w=800&q=80",
+    category: "Pulses & Lentils",
+    quantity: 95,
+    ratings: 4.6,
+    unitSold: 210
+  },
+  {
+    name: "Masoor Dal 1kg",
+    description: "Red lentils perfect for quick cooking.",
+    price: 145,
+    imageUrl: "https://images.unsplash.com/photo-1596040033229-a0b8d1ab487a?w=800&q=80",
+    category: "Pulses & Lentils",
+    quantity: 110,
+    ratings: 4.4,
+    unitSold: 195
+  },
+  
+  // Edible Oils
+  {
+    name: "Sunflower Oil 1L",
+    description: "Refined sunflower oil for light and healthy cooking.",
+    price: 145,
+    imageUrl: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&q=80",
+    category: "Edible Oils",
+    quantity: 90,
+    ratings: 4.4,
+    unitSold: 300
+  },
+  {
+    name: "Olive Oil 500ml",
+    description: "Extra virgin olive oil for salads and cooking.",
+    price: 685,
+    imageUrl: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&q=80",
+    category: "Edible Oils",
+    quantity: 40,
     ratings: 4.8,
-    unitSold: 65
+    unitSold: 125,
+    offer: "Premium quality"
+  },
+  
+  // Dairy Products
+  {
+    name: "Butter 500g",
+    description: "Creamy butter with rich taste and smooth texture.",
+    price: 295,
+    imageUrl: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=800&q=80",
+    category: "Dairy Products",
+    quantity: 70,
+    ratings: 4.8,
+    unitSold: 380,
+    offer: "Free delivery"
   },
   {
-    name: "Clarks Desert Boot",
-    description: "Iconic chukka boots with crepe sole and suede upper.",
-    price: 135.00,
-    imageUrl: "https://images.unsplash.com/photo-1560769629-975ec94e6a86",
-    category: "Boots",
-    quantity: 20,
-    ratings: 4.6,
-    unitSold: 40
+    name: "Condensed Milk 400g",
+    description: "Sweetened condensed milk for desserts.",
+    price: 145,
+    imageUrl: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=800&q=80",
+    category: "Dairy Products",
+    quantity: 60,
+    ratings: 4.8,
+    unitSold: 160
   },
   {
-    name: "On Cloudswift",
-    description: "Lightweight running shoes with Helion™ superfoam for energy return.",
-    price: 140.00,
-    imageUrl: "https://images.unsplash.com/photo-1543508282-6319a3e2621f",
-    category: "Running",
-    quantity: 25,
+    name: "Paneer 200g",
+    description: "Fresh cottage cheese for curries and snacks.",
+    price: 85,
+    imageUrl: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=800&q=80",
+    category: "Dairy Products",
+    quantity: 55,
     ratings: 4.7,
-    unitSold: 55
+    unitSold: 290
   },
+  
+  // Bakery
   {
-    name: "Cole Haan Zerogrand",
-    description: "Dress shoes with athletic-inspired comfort and flexible construction.",
-    price: 200.00,
-    imageUrl: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28",
-    category: "Dress",
-    quantity: 15,
-    ratings: 4.5,
-    unitSold: 30
-  },
-  {
-    name: "ECCO Soft 7",
-    description: "Premium leather sneakers with anatomical last for natural movement.",
-    price: 160.00,
-    imageUrl: "https://images.unsplash.com/photo-1460353581641-37baddab0fa2",
-    category: "Casual",
-    quantity: 30,
-    ratings: 4.6,
-    unitSold: 60
-  },
-  {
-    name: "Allbirds Wool Runners",
-    description: "Sustainable shoes made from merino wool with eco-friendly materials.",
-    price: 95.00,
-    imageUrl: "https://images.unsplash.com/photo-1562273138-f46be4ebdf33",
-    category: "Eco-Friendly",
-    quantity: 40,
-    ratings: 4.4,
-    unitSold: 85,
-    offer: "Free shipping"
-  },
-  {
-    name: "Nike Zoom Pegasus 38",
-    description: "Responsive running shoes with Zoom Air cushioning for speed.",
-    price: 120.00,
-    imageUrl: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519",
-    category: "Running",
-    quantity: 35,
-    ratings: 4.7,
-    unitSold: 90
-  },
-  {
-    name: "Steve Madden Troopa",
-    description: "Combat-style boots with lace-up closure and durable construction.",
-    price: 99.95,
-    imageUrl: "https://images.unsplash.com/photo-1560769629-975ec94e6a86",
-    category: "Boots",
-    quantity: 25,
+    name: "Fresh Bread",
+    description: "Soft and fresh bread for daily meals.",
+    price: 45,
+    imageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80",
+    category: "Bakery",
+    quantity: 150,
     ratings: 4.3,
-    unitSold: 50
+    unitSold: 500
   },
   {
-    name: "Teva Hurricane XLT2",
-    description: "Adventure sandals with quick-dry webbing and rugged outsole.",
-    price: 75.00,
-    imageUrl: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77",
-    category: "Sandals",
-    quantity: 30,
+    name: "Whole Wheat Bread",
+    description: "Nutritious whole wheat bread.",
+    price: 55,
+    imageUrl: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=800&q=80",
+    category: "Bakery",
+    quantity: 120,
     ratings: 4.5,
-    unitSold: 65
+    unitSold: 380
+  },
+  
+  // Instant Food
+  {
+    name: "Instant Noodles Pack",
+    description: "Quick and tasty instant noodles.",
+    price: 168,
+    imageUrl: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&q=80",
+    category: "Instant Food",
+    quantity: 200,
+    ratings: 4.6,
+    unitSold: 620,
+    offer: "Buy 2 Get 1"
   },
   {
-    name: "Fila Disruptor II",
-    description: "Chunky retro sneakers with bold design and comfortable platform.",
-    price: 65.00,
-    imageUrl: "https://images.unsplash.com/photo-1543508282-6319a3e2621f",
-    category: "Sneakers",
-    quantity: 45,
+    name: "Instant Pasta",
+    description: "Quick cook pasta for easy meals.",
+    price: 125,
+    imageUrl: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&q=80",
+    category: "Instant Food",
+    quantity: 140,
+    ratings: 4.4,
+    unitSold: 310
+  },
+  
+  // Spreads & Jams
+  {
+    name: "Fruit Jam 500g",
+    description: "Sweet and fruity jam made from real fruits.",
+    price: 165,
+    imageUrl: "https://images.unsplash.com/photo-1599904149065-24c29a1d9b1f?w=800&q=80",
+    category: "Spreads & Jams",
+    quantity: 85,
+    ratings: 4.5,
+    unitSold: 210
+  },
+  
+  // Beverages
+  {
+    name: "Tea Powder 1kg",
+    description: "Premium tea leaves with strong aroma and taste.",
+    price: 625,
+    imageUrl: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=800&q=80",
+    category: "Beverages",
+    quantity: 60,
+    ratings: 4.6,
+    unitSold: 190
+  },
+  {
+    name: "Coffee Powder 500g",
+    description: "Rich and aromatic filter coffee powder.",
+    price: 485,
+    imageUrl: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800&q=80",
+    category: "Beverages",
+    quantity: 50,
+    ratings: 4.7,
+    unitSold: 160
+  },
+  
+  // Fruits
+  {
+    name: "Fresh Apples 1kg",
+    description: "Crisp and juicy fresh apples.",
+    price: 180,
+    imageUrl: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=800&q=80",
+    category: "Fruits",
+    quantity: 100,
+    ratings: 4.4,
+    unitSold: 240,
+    offer: "Seasonal offer"
+  },
+  {
+    name: "Fresh Bananas 1 dozen",
+    description: "Ripe yellow bananas rich in potassium.",
+    price: 60,
+    imageUrl: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?w=800&q=80",
+    category: "Fruits",
+    quantity: 150,
+    ratings: 4.3,
+    unitSold: 420
+  },
+  
+  // Vegetables
+  {
+    name: "Fresh Onions 1kg",
+    description: "Farm fresh onions for everyday cooking.",
+    price: 40,
+    imageUrl: "https://images.unsplash.com/photo-1508747703725-719777637510?w=800&q=80",
+    category: "Vegetables",
+    quantity: 300,
     ratings: 4.2,
-    unitSold: 100,
-    offer: "15% off"
+    unitSold: 520
   },
   {
-    name: "Jordan 1 Retro High",
-    description: "Iconic basketball-inspired sneakers with classic color blocking.",
-    price: 170.00,
-    imageUrl: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28",
-    category: "Basketball",
-    quantity: 15,
-    ratings: 4.9,
-    unitSold: 40
+    name: "Fresh Tomatoes 1kg",
+    description: "Juicy red tomatoes for curries and salads.",
+    price: 45,
+    imageUrl: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&q=80",
+    category: "Vegetables",
+    quantity: 280,
+    ratings: 4.3,
+    unitSold: 480
+  },
+  {
+    name: "Fresh Potatoes 2kg",
+    description: "Quality potatoes for all your cooking needs.",
+    price: 50,
+    imageUrl: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800&q=80",
+    category: "Vegetables",
+    quantity: 250,
+    ratings: 4.1,
+    unitSold: 550
+  },
+  
+  // Snacks
+  {
+    name: "Namkeen Snacks 500g",
+    description: "Crunchy Indian namkeen snacks.",
+    price: 210,
+    imageUrl: "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=800&q=80",
+    category: "Snacks",
+    quantity: 90,
+    ratings: 4.7,
+    unitSold: 280
+  },
+  {
+    name: "Potato Chips 200g",
+    description: "Crispy and tasty potato chips.",
+    price: 95,
+    imageUrl: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=800&q=80",
+    category: "Snacks",
+    quantity: 140,
+    ratings: 4.5,
+    unitSold: 390
+  },
+  
+  // Personal Care
+  {
+    name: "Toothpaste",
+    description: "Toothpaste for strong and healthy teeth.",
+    price: 99,
+    imageUrl: "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=800&q=80",
+    category: "Personal Care",
+    quantity: 140,
+    ratings: 4.5,
+    unitSold: 360
+  },
+  
+  // Household Essentials
+  {
+    name: "Laundry Detergent 1kg",
+    description: "Detergent powder for powerful stain removal.",
+    price: 230,
+    imageUrl: "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=800&q=80",
+    category: "Household Essentials",
+    quantity: 75,
+    ratings: 4.6,
+    unitSold: 190
+  },
+  {
+    name: "Dish Wash Liquid 500ml",
+    description: "Effective dishwashing liquid with lemon fragrance.",
+    price: 125,
+    imageUrl: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&q=80",
+    category: "Household Essentials",
+    quantity: 95,
+    ratings: 4.5,
+    unitSold: 245
   }
 ];
 
-module.exports=sampleShoes;
+module.exports = sampleGroceries;

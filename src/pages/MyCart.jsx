@@ -186,9 +186,9 @@ const MyCart = () => {
                         <h3 className="font-semibold text-xl text-[#1A2433]">{item?.product?.name}</h3>
                         <div className="flex items-center gap-2 mt-1">
                           <p className="text-gray-600">{item?.product?.category}</p>
-                          {item.size && (
+                          {/* {item.size && (
                             <span className="text-gray-600">• Size: {item?.size}</span>
-                          )}
+                          )} */}
                         </div>
                         {item?.product?.offer && (
                           <span className="inline-block bg-blue-50 text-blue-800 text-xs px-2 py-1 rounded-full mt-2">
@@ -196,7 +196,7 @@ const MyCart = () => {
                           </span>
                         )}
                       </div>
-                      <p className="font-bold text-lg text-[#1A2433]">${item?.product?.price?.toFixed(2)}</p>
+                      <p className="font-bold text-lg text-[#1A2433]">₹{item?.product?.price?.toFixed(2)}</p>
                     </div>
                     
                     <div className="mt-auto pt-4 flex items-center justify-between">
@@ -252,18 +252,18 @@ const MyCart = () => {
                           <span className="text-gray-300">{item?.quantity} ×</span>
                           <span className="font-medium text-gray-100 line-clamp-1">{item?.product?.name}</span>
                         </div>
-                        {item.size && (
+                        {/* {item.size && (
                           <span className="text-gray-400 text-xs">Size: {item.size}</span>
-                        )}
+                        )} */}
                       </div>
-                      <span className="font-medium">${(item.product?.price * item?.quantity).toFixed(2)}</span>
+                      <span className="font-medium">₹{(item.product?.price * item?.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                   
                   <div className="border-t border-gray-700 pt-4 space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-300">Subtotal</span>
-                      <span>${calculateTotal().toFixed(2)}</span>
+                      <span>₹{calculateTotal().toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-300">Shipping</span>
@@ -275,7 +275,7 @@ const MyCart = () => {
                 <div className="border-t border-gray-700 pt-4 mb-6">
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-lg">Total</span>
-                    <span className="font-bold text-xl text-white">${calculateTotal().toFixed(2)}</span>
+                    <span className="font-bold text-xl text-white">₹{calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
                 

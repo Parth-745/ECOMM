@@ -5,7 +5,7 @@ const coookieParser=require('cookie-parser');
 const router=require('./routes/route');
 const mongoose=require('mongoose');
 require('dotenv').config();
-const PORT=process.env.PORT || 5000;
+const PORT=process.env.PORT || 4000;
 
 app.use(cors({
     origin: "http://localhost:5173",

@@ -142,7 +142,7 @@ const ProductPage = () => {
               </span>
             </div>
             
-            <p className="text-2xl font-bold">${product.price}</p>
+            <p className="text-2xl font-bold">₹{product.price}</p>
             
             {product.offer && (
               <p className="text-green-600 font-medium">{product.offer}</p>
@@ -151,7 +151,7 @@ const ProductPage = () => {
             <p className="text-gray-700">{product.description}</p>
             
             {/* Size Selection */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="font-medium">Size (US Men's)</p>
                 <button 
@@ -176,7 +176,7 @@ const ProductPage = () => {
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
             
             {/* Quantity Selector */}
             <div className="flex items-center space-x-4">

@@ -31,10 +31,6 @@ const OrderConfirmation = () => {
                 <span className="mr-2">2.</span>
                 <span>We'll update your order status as it gets shipped</span>
               </li>
-              <li className="flex items-start">
-                <span className="mr-2">3.</span>
-                <span>Estimated delivery: 3-5 business days</span>
-              </li>
             </ul>
           </div>
           

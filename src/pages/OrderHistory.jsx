@@ -222,11 +222,11 @@ const OrderCard = ({
                     <div className="ml-4 flex-1">
                       <div className="flex justify-between text-base font-medium text-gray-900">
                         <h3>{item.product.name}</h3>
-                        <p>${item.product.price}</p>
+                        <p>₹{item.product.price}</p>
                       </div>
-                      <p className="mt-1 text-sm text-gray-500">
+                      {/* <p className="mt-1 text-sm text-gray-500">
                         Size: {item.size || 'One Size'}
-                      </p>
+                      </p> */}
                       <p className="mt-1 text-sm text-gray-500">
                         Qty: {item.quantity}
                       </p>
@@ -309,9 +309,9 @@ const OrderCard = ({
             <h4 className="text-lg font-medium mb-4">Order Summary</h4>
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="space-y-3">
-                <div className="flex justify-between">
+                  <div className="flex justify-between">
                   <span>Subtotal ({order.products.length} item{order.products.length > 1 ? 's' : ''})</span>
-                  <span>${order.totalAmount.toFixed(2)}</span>
+                  <span>₹{order.totalAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
@@ -319,7 +319,7 @@ const OrderCard = ({
                 </div>
                 <div className="border-t border-gray-200 pt-3 flex justify-between font-medium">
                   <span>Total</span>
-                  <span>${order.totalAmount.toFixed(2)}</span>
+                  <span>₹{order.totalAmount.toFixed(2)}</span>
                 </div>
               </div>
               

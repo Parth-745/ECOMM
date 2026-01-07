@@ -14,7 +14,7 @@ exports.SendOtp=async(req,res)=>{
         const {email}=req.body;
 
         const exist = await User.findOne({email});
-
+        console.log(email);
         if(exist){
             return res.status(400).json({
                 success:false,

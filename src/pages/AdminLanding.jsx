@@ -152,7 +152,7 @@ const AdminLanding = () => {
                 <div className="flex items-center">
                   <FiDollarSign className="text-blue-500 mr-2" />
                   <span className="font-semibold">Total Revenue:</span>
-                  <span className="ml-2 text-xl">${analytics.totalRevenue.toLocaleString()}</span>
+                  <span className="ml-2 text-xl">₹{analytics.totalRevenue.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -165,7 +165,7 @@ const AdminLanding = () => {
                         style={{ height: `${(month.revenue / analytics.totalRevenue) * 100}%` }}
                       ></div>
                       <span className="text-xs mt-2">{month.month}</span>
-                      <span className="text-xs font-semibold">${month.revenue}</span>
+                      <span className="text-xs font-semibold">₹{month.revenue}</span>
                     </div>
                   ))}
                 </div>
@@ -246,7 +246,7 @@ const AdminLanding = () => {
                       {order.products.length} item{order.products.length !== 1 ? 's' : ''}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${order.totalAmount.toFixed(2)}
+                      ₹{order.totalAmount.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(order.orderDate)}

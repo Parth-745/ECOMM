@@ -34,7 +34,7 @@ const Navbar = () => {
               className="flex-shrink-0 flex items-center cursor-pointer" 
               onClick={() => navigate('/')}
             >
-              <span className="text-xl font-bold text-gray-800">HomePage</span>
+              <span className="text-xl font-bold text-gray-800">Groovo</span>
             </div>
             
             {/* Desktop navigation */}
@@ -45,12 +45,12 @@ const Navbar = () => {
               >
                 Shop Now
               </a>
-              <a
+              {/* <a
                 href="/about"
                 className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
                 About Us
-              </a>
+              </a> */}
             </div>
           </div>
 
@@ -174,12 +174,12 @@ const Navbar = () => {
             >
               Shop Now
             </a>
-            <a
+            {/* <a
               href="/about"
               className="bg-gray-50 border-transparent text-gray-500 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               About Us
-            </a>
+            </a> */}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="flex items-center px-4 space-x-4 justify-between">
