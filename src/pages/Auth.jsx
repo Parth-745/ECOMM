@@ -49,9 +49,14 @@ const Auth = () => {
   const {signInWithGoogle,registerWithEmailAndPassword,loginWithEmailAndPassword,setloading} = useContext(FirebaseContext);
 
   const RegisterUsingGoogle = async () => {
+          const toastId=toast.loading("Authenticating...")
     try{
       const user=await signInWithGoogle();
-      
+      if (!user) {
+        toast.error("Google sign-in cancelled");
+        toast.dismiss(toastId);
+        return;
+      }
       const response=await fetch('http://localhost:4000/register', {
         method: 'POST',
         headers: {
@@ -75,6 +80,9 @@ const Auth = () => {
     catch(error) {
       console.error("Error during registration:", error);
     }
+    finally{
+      toast.dismiss(toastId);
+    }
   }
 
   async function otpHandler() {
@@ -91,14 +99,16 @@ const Auth = () => {
 
       const data = await response.json();
       if(data.success){
-        enqueueSnackbar("OTP sent successfully", { variant: 'success' });
+        toast.success("OTP SENT ! ");
         setOtpBtnEnabled(true);
         setState('otp');
       } else {
         console.error("Failed to send OTP:", data.message);
+        toast.error("Errors while sending otp");
       }
     }
     catch(e){
+      toast.error(e);
       console.error("Error sending OTP:", e);
     }
   }
@@ -131,6 +141,7 @@ const Auth = () => {
   }
 
   async function registerHandler() {
+    const toastId=toast.loading("Creatint Account...")
     if(!password) return enqueueSnackbar("Password must be 6-digit long", { preventDuplicate:true,variant: 'error' });
     try{
       const user=await registerWithEmailAndPassword(email, password);
@@ -153,10 +164,15 @@ const Auth = () => {
         navigate('/');
       } else {
         console.error("Registration failed:", data.message);
+        toast.error("Account already exist ! ");
       }
     }
     catch(e){
       console.error("Error during registration:", e);
+      toast.error("Account already exist ! ");
+    }
+    finally{
+      toast.dismiss(toastId);
     }
   }
 

@@ -14,10 +14,10 @@ exports.isUser = async (req, res, next) => {
   }
   
   const token = authHeader.split(" ")[1];
-
+  console.log(token);
   try {
     const decoded = await admin.auth().verifyIdToken(token);
-    
+    console.log("Decoded Firebase token:", decoded);
     req.payload = decoded;
     // console.log("Decoded payload:", decoded);
     next();
@@ -54,6 +54,37 @@ exports.isAdmin=async(req,res,next)=>{
             });
         }
         next();
+    }
+    catch(e){
+        return res.status(401).json({
+            success:false,
+            message:'Something went wrong, while verifying the token',
+            error:e.message,
+        });
+    }
+}
+
+exports.isUser2=async(req,res,next)=>{
+    try{
+        let token=req.cookies.token;
+        if(!token){
+            return res.status(401).json({
+                success:false,
+                message:'Token Missing',
+            });
+        }
+        try{
+            const payload=jwt.verify(token,process.env.JWT_SECRET);
+            req.payload=payload;
+            next();
+        }
+        catch(e){
+            console.log(e);
+            return res.status(401).json({
+                success:false,
+                message:'token is invalid',
+            });
+        }
     }
     catch(e){
         return res.status(401).json({

@@ -58,7 +58,7 @@ const ShowProducts = ({ visibleProducts }) => {
             }
         } catch (e) {
             console.error("Error adding to cart:", e);
-            toast.error("An error occurred while adding to cart");
+            // toast.error("An error occurred while adding to cart");
         }
     }
 

@@ -137,9 +137,9 @@ const Products = () => {
                                     onChange={(e) => setPriceFilter(e.target.value)}
                                 >
                                     <option value="">All Prices</option>
-                                    <option value="under50">Under $50</option>
-                                    <option value="50to100">$50 - $100</option>
-                                    <option value="over100">Over $100</option>
+                                    <option value="under50">Under ₹50</option>
+                                    <option value="50to100">₹50 - ₹100</option>
+                                    <option value="over100">Over ₹100</option>
                                 </select>
                             </div>
 

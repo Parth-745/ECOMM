@@ -85,12 +85,23 @@ exports.MatchOtp=async(req,res)=>{
 exports.register=async(req,res)=>{
     try{
         const {username,email,password,firebaseUid}=req.body;
+        console.log(req.body);
         const exist = await User.findOne({firebaseUid});
+        console.log(exist);
 
         if(exist){
             return res.status(400).json({
                 success:true,
                 message:"User already exist with this credentials"
+            })
+        }
+
+        const ex=await User.findOne({email});
+        console.log(ex);
+        if(ex){
+            return res.status(400).json({
+                success:false,
+                message:"User already exist with this email"
             })
         }
 
@@ -105,6 +116,8 @@ exports.register=async(req,res)=>{
             password:hashedPassword || null,
         });
 
+        console.log("New user created:", user);
+
         return res.status(200).json({
             success:true,
             message:"User registered successfully",
@@ -117,7 +130,7 @@ exports.register=async(req,res)=>{
         console.log(e);
         return res.status(500).json({
             success:false,
-            message:"Internal server error during otp generation",
+            message:"Internal server error during registration",
         })
     }
 }
@@ -164,6 +177,7 @@ exports.login=async(req,res)=>{
             httpOnly:true,
         }
 
+        console.log("User logged in:", token);
         return res.status(200).cookie("token",token,options).json({
             success:true,
             message:"User logged in successfully",
@@ -273,3 +287,29 @@ exports.AdminLogin=async(req,res)=>{
         })
     }
 }
+
+exports.getUser=async(req,res)=>{
+    try{
+        const userId=req.payload.id;
+        // console.log("Fetching user with ID:", userId);
+        const user=await User.findById(userId).select('-password');
+
+        if(!user){
+            return res.status(404).json({
+                success:false,
+                message:"User not found"
+            })
+        }
+
+        return res.status(200).json({
+            success:true,
+            user:user
+        });
+    }
+    catch(e){
+        console.log(e);
+        return res.status(500).json({
+            success:false,
+            message:"Internal server error while fetching user",
+        })
+    }}

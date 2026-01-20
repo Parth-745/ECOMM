@@ -15,15 +15,14 @@ export const FirebaseContext = createContext();
 
 export default function FirebaseContextProvider({ children }) {
   const firebaseConfig = {
-    apiKey: "AIzaSyDODuABlymldT19a-nObYMFi-O5cYFcY8Q",
-    authDomain: "ecomm-4ad22.firebaseapp.com",
-    projectId: "ecomm-4ad22",
-    storageBucket: "ecomm-4ad22.appspot.com",
-    messagingSenderId: "615805914255",
-    appId: "1:615805914255:web:b88a0d087eb0f0bc5374fa",
-    measurementId: "G-01E9Z15HS1",
-  };
-
+  apiKey: "AIzaSyB8Tyu30f3olWTRNo7uqRkecPkRM5s9RT0",
+  authDomain: "groovo-abcd7.firebaseapp.com",
+  projectId: "groovo-abcd7",
+  storageBucket: "groovo-abcd7.firebasestorage.app",
+  messagingSenderId: "799603390186",
+  appId: "1:799603390186:web:79f81c46b143adf95b8993",
+  measurementId: "G-LR5KDC2C98"
+};
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
