@@ -8,6 +8,7 @@ const ProfileSettings = () => {
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
+    email: '',
     username: '',
     phone: '',
     address: '' // Single string for full address
@@ -32,6 +33,7 @@ const ProfileSettings = () => {
         console.log(data);
         if (data.success) {
           setFormData({
+            email: data.user.email || '',
             username: data.user.username || '',
             phone: data.user.phone || '',
             address: data.user.address || ''
@@ -93,6 +95,20 @@ const ProfileSettings = () => {
       <h1 className="text-2xl font-bold mb-6 text-center">Profile Settings</h1>
       
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            readOnly
+            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+          />
+        </div>
+
         {/* Username */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

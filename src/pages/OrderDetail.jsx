@@ -232,6 +232,25 @@ const cancelOrder = async () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Delivery Agent Information */}
+                  {order.deliveryAgent && order.deliveryStatus === 'accepted' && (
+                    <div className="col-span-1 md:col-span-2 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h3 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
+                        👤 Delivery Agent Assigned
+                      </h3>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-blue-700">Agent Name</p>
+                          <p className="text-sm font-semibold text-gray-900">{order.deliveryAgent.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-blue-700">Contact Number</p>
+                          <p className="text-sm font-semibold text-gray-900">{order.deliveryAgent.phone}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -249,8 +268,10 @@ const cancelOrder = async () => {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Payment Status</h3>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {order.paymentStatus || 'Paid'}
+                    <p className={`mt-1 text-sm font-medium ${
+                      order.paymentStatus === 'Paid' ? 'text-green-600' : 'text-orange-600'
+                    }`}>
+                      {order.paymentStatus}
                     </p>
                   </div>
                 </div>

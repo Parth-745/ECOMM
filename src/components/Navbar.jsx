@@ -10,7 +10,8 @@ import {
   FiSettings,
   FiMapPin,
   FiChevronDown,
-  FiChevronUp
+  FiChevronUp,
+  FiStar
 } from 'react-icons/fi';
 import { useContext } from 'react';
 import { FirebaseContext } from '../context/FirebaseContext';
@@ -110,6 +111,16 @@ const Navbar = () => {
                     >
                       <FiPackage className="mr-2" />
                       My Orders
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate('/groovo-plus');
+                        setIsProfileOpen(false);
+                      }}
+                      className="flex items-center px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50 w-full text-left"
+                    >
+                      <FiStar className="mr-2 text-yellow-500" />
+                      Groovo Plus
                     </button>
                     <button
                       onClick={() => {
@@ -215,6 +226,16 @@ const Navbar = () => {
                   >
                     <FiPackage className="h-6 w-6" />
                     <span className="ml-2">My Orders</span>
+                  </button>
+                  <button 
+                    className="flex items-center text-yellow-600 hover:text-yellow-700"
+                    onClick={() => {
+                      navigate('/groovo-plus');
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <FiStar className="h-6 w-6 text-yellow-500" />
+                    <span className="ml-2">Groovo Plus</span>
                   </button>
                   <button
                     onClick={() => {

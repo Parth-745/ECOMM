@@ -17,6 +17,12 @@ import AdminLanding from "./pages/AdminLanding";
 import AdminLogin from "./pages/AdminLogin";
 import About from "./pages/About";
 import AdminInventory from "./pages/AdminInventory";
+import DeliveryAgentLogin from "./pages/DeliveryAgentLogin";
+import DeliveryAgentSignup from "./pages/DeliveryAgentSignup";
+import DeliveryAgentDashboard from "./pages/DeliveryAgentDashboard";
+import DeliveryAgentSettings from "./pages/DeliveryAgentSettings";
+import DeliveryAgentOrders from "./pages/DeliveryAgentOrders";
+import GroovoPlus from "./pages/GroovoPlus";
 function App() {
   const {loading}=useContext(FirebaseContext);
   return (
@@ -35,6 +41,12 @@ function App() {
         <Route path='/profile/settings' element={<ProfileSettings/>}/>
         <Route path='/admin' element={<AdminLanding/>}/>
         <Route path='/adminlogin' element={<AdminLogin/>}/>
+        <Route path='/delivery_agentlogin' element={<DeliveryAgentLogin/>}/>
+        <Route path='/delivery-agent-signup' element={<DeliveryAgentSignup/>}/>
+        <Route path='/delivery-agent' element={<DeliveryAgentDashboard/>}/>
+        <Route path='/delivery-agent/settings' element={<DeliveryAgentSettings/>}/>
+        <Route path='/delivery-agent/orders' element={<DeliveryAgentOrders/>}/>
+        <Route path='/groovo-plus' element={<GroovoPlus/>}/>
         {/* <Route path='/about' element={<About/>}/> */}
         <Route path='/admin/inventory' element={<AdminInventory/>}/>
         <Route path='*' element={<h1>Page Not Found</h1>}/>

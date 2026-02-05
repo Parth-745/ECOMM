@@ -1,4 +1,4 @@
-module.exports = (otp) => {
+module.exports = (otp, title = 'Verify Your Account') => {
   const year = new Date().getFullYear();
   return `<!doctype html>
 <html lang="en">
@@ -22,7 +22,7 @@ module.exports = (otp) => {
     <div class="container">
       <div class="card">
         <div class="brand">GROOVO</div>
-        <h1>Verify your account</h1>
+        <h1>${title}</h1>
         <p class="muted">Use the code below to complete your sign-in. This code is valid for <strong>2 minutes</strong>.</p>
         <div class="otp">${otp}</div>
         <p class="muted">Do not share this code with anyone. If you did not request this, please ignore this email.</p>

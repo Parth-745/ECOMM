@@ -15,15 +15,16 @@ const mailsender = async (email, title, otp) => {
         });
 
         let info = await transporter.sendMail({
-            from: 'Ecommerce Team <',
+            from: process.env.MAIL_USER,
             to: email,
             subject: title,
-            html: emailTemplate(otp),
+            html: emailTemplate(otp, title),
         });
 
-        // console.log(info);
+        return { success: true, info };
     } catch (e) {
-        console.log("In Utils", e.message);
+        console.log("In Utils - Email Error:", e.message);
+        return { success: false, error: e.message };
     }
 }
 
