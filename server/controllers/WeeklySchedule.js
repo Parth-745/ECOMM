@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const WeeklySchedule = require('../models/WeeklySchedule');
 const Product = require('../models/Product');
+const Order = require('../models/Order');
 
 // Try to load razorpay, but don't fail if it's not installed
 let Razorpay;
@@ -19,25 +20,14 @@ try {
 // Save or update weekly schedule
 exports.saveWeeklySchedule = async (req, res) => {
     try {
-        const { weeklyItems, deliveryDay, deliveryTimeSlot } = req.body;
-        const firebaseUid = req.payload.uid;
-
-        // Validate required fields
-        if (!weeklyItems || !Array.isArray(weeklyItems) || weeklyItems.length === 0) {
-            return res.status(400).json({
+        const firebaseUid = req.payload?.uid;
+        if (!firebaseUid) {
+            return res.status(401).json({
                 success: false,
-                message: 'At least one item must be added to the weekly schedule'
+                message: 'Unauthorized user'
             });
         }
 
-        if (!deliveryDay || !deliveryTimeSlot) {
-            return res.status(400).json({
-                success: false,
-                message: 'Delivery day and time slot are required'
-            });
-        }
-
-        // Find user and validate Groovo Plus subscription
         const user = await User.findOne({ firebaseUid });
         if (!user) {
             return res.status(404).json({
@@ -46,90 +36,123 @@ exports.saveWeeklySchedule = async (req, res) => {
             });
         }
 
-        // Check if user has active Groovo Plus subscription
-        const hasActiveSubscription = user.isGroovoPlusSubscriptionActive &&
-                                    user.isGroovoPlusSubscriptionActive() &&
-                                    user.subscriptionEndDate &&
-                                    new Date() <= new Date(user.subscriptionEndDate);
+        const hasActiveGroovoPlus =
+            typeof user.isGroovoPlusSubscriptionActive === 'function' &&
+            user.isGroovoPlusSubscriptionActive();
 
-        if (!hasActiveSubscription) {
+        if (!hasActiveGroovoPlus) {
             return res.status(403).json({
                 success: false,
-                message: 'Active Groovo Plus subscription is required to create weekly schedules'
+                message: 'Only users with active Groovo Plus subscription can create weekly schedules'
             });
         }
 
-        // Validate weekly items - check if products exist and format is correct
-        const validatedItems = [];
-        for (const item of weeklyItems) {
-            if (!item.productId || !item.quantity || item.quantity < 1) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid item format. Each item must have productId and quantity (min 1)'
-                });
-            }
-
-            // Check if product exists
-            const product = await Product.findById(item.productId);
-            if (!product) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Product with ID ${item.productId} not found`
-                });
-            }
-
-            validatedItems.push({
-                productId: item.productId,
-                quantity: item.quantity
+        if (!Array.isArray(req.body.weeklyItems) || req.body.weeklyItems.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'At least one item must be added to the weekly schedule'
             });
         }
 
-        // Check if user already has a weekly schedule
-        let schedule = await WeeklySchedule.findOne({ userId: user._id });
-
-        if (schedule) {
-            // Update existing schedule
-            schedule.weeklyItems = validatedItems;
-            schedule.deliveryDay = deliveryDay;
-            schedule.deliveryTimeSlot = deliveryTimeSlot;
-            schedule.isActive = true;
-            schedule.updatedAt = new Date();
-
-            await schedule.save();
-
-            return res.status(200).json({
-                success: true,
-                message: 'Weekly schedule updated successfully',
-                schedule: schedule
-            });
-        } else {
-            // Create new schedule
-            const newSchedule = new WeeklySchedule({
-                userId: user._id,
-                weeklyItems: validatedItems,
-                deliveryDay: deliveryDay,
-                deliveryTimeSlot: deliveryTimeSlot,
-                isActive: true
-            });
-
-            await newSchedule.save();
-
-            return res.status(201).json({
-                success: true,
-                message: 'Weekly schedule created successfully',
-                schedule: newSchedule
+        if (!req.body.deliveryDay || !req.body.deliveryTimeSlot) {
+            return res.status(400).json({
+                success: false,
+                message: 'Delivery day and time slot are required'
             });
         }
 
+        const userId = user._id;
+        
+        // Check if user already has a schedule for this slot
+        const existingSchedule = await WeeklySchedule.findOne({
+            userId: userId,
+            deliveryDay: req.body.deliveryDay,
+            deliveryTimeSlot: req.body.deliveryTimeSlot,
+            isActive: true
+        });
+        
+        if (existingSchedule) {
+            return res.status(400).json({
+                success: false,
+                message: 'You already have a schedule for this day and time slot'
+            });
+        }
+        
+        // Create schedule
+        const schedule = new WeeklySchedule({
+            userId: userId,
+            weeklyItems: req.body.weeklyItems,
+            deliveryDay: req.body.deliveryDay,
+            deliveryTimeSlot: req.body.deliveryTimeSlot,
+            deliveryAddress: req.body.deliveryAddress,
+            totalAmount: req.body.totalAmount
+        });
+        
+        await schedule.save();
+
+        const productIds = req.body.weeklyItems.map((item) => item.productId);
+        const products = await Product.find({ _id: { $in: productIds } });
+        const productMap = new Map(products.map((product) => [product._id.toString(), product]));
+
+        const orderProducts = req.body.weeklyItems.map((item) => ({
+            product: item.productId,
+            quantity: Number(item.quantity) || 1,
+            size: 'US 8',
+        }));
+
+        const subtotal = req.body.weeklyItems.reduce((sum, item) => {
+            const matchedProduct = productMap.get(String(item.productId));
+            if (!matchedProduct) return sum;
+            return sum + (matchedProduct.price * (Number(item.quantity) || 1));
+        }, 0);
+
+        const weeklyOrder = await Order.create({
+            userId: user._id,
+            products: orderProducts,
+            subtotal: subtotal,
+            deliveryCharge: 0,
+            totalAmount: subtotal,
+            shippingAddress: user.address || 'Weekly Delivery Address',
+            expectedDeliveryDate: schedule.nextDeliveryDate,
+            userName: user.username || user.name || 'Unknown',
+            userPhone: user.phone || '',
+            userEmail: user.email || '',
+            paymentMethod: 'Cash on Delivery',
+            paymentStatus: 'Unpaid',
+            isWeeklyOrder: true,
+            weeklyDeliveryDay: schedule.deliveryDay,
+            weeklyDeliveryTimeSlot: schedule.deliveryTimeSlot,
+        });
+
+        if (Array.isArray(user.weeklyCart)) {
+            user.weeklyCart.forEach((item) => {
+                if (item.skipNextDelivery) {
+                    item.skipNextDelivery = false;
+                }
+            });
+        }
+
+        user.order.push(weeklyOrder._id);
+        await user.save();
+
+        const updatedUser = await User.findById(user._id).populate('weeklyCart.product');
+
+        res.status(201).json({
+            success: true,
+            message: 'Weekly schedule created successfully',
+            schedule,
+            order: weeklyOrder,
+            weeklyCart: updatedUser.weeklyCart || [],
+        });
+        
     } catch (error) {
         console.error('Error saving weekly schedule:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to save weekly schedule. Please try again.'
+        res.status(500).json({ 
+            success: false, 
+            message: error.message || 'Failed to create weekly schedule'
         });
     }
 };
-
 
 // Get user's weekly schedule
 exports.getWeeklySchedule = async (req, res) => {

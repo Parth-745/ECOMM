@@ -245,27 +245,56 @@ exports.getProductDetail=async(req,res)=>{
 
 exports.AddReview = async (req, res) => {
   try {
-    const { orderId, rating, comment } = req.body;
-    const userId = await User.findOne({ firebaseUid: req.payload.uid }).select('_id');
+    const { orderId, productId, rating, comment } = req.body;
+    const userDoc = await User.findOne({ firebaseUid: req.payload.uid }).select('_id');
+
+    if (!userDoc) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
     // Validate input
-    if (!orderId || !rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ message: 'Invalid review data' });
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ success: false, message: 'Invalid review data' });
+    }
+
+    // Product page flow: review a specific product directly
+    if (productId) {
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res.status(404).json({ success: false, message: 'Product not found' });
+      }
+
+      product.reviews.push({
+        userId: userDoc._id,
+        rating,
+        comment,
+        date: new Date(),
+      });
+
+      const totalRatings = product.reviews.reduce((sum, review) => sum + review.rating, 0);
+      product.ratings = parseFloat((totalRatings / product.reviews.length).toFixed(1));
+
+      await product.save();
+      return res.json({ success: true, message: 'Review added successfully' });
+    }
+
+    // Existing order-history flow
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: 'Order ID or Product ID is required' });
     }
 
     const order = await Order.findById(orderId);
-    console.log(order)
     if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+      return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    // Use for...of instead of forEach for async operations
     for (const item of order.products) {
       try {
         const product = await Product.findById(item.product);
-        console.log(product)
+        if (!product) continue;
+
         const newReview = {
-          userId,
+          userId: userDoc._id,
           rating,
           comment,
           date: new Date()
@@ -274,18 +303,15 @@ exports.AddReview = async (req, res) => {
         product.reviews.push(newReview);
         const totalRatings = product.reviews.reduce((sum, review) => sum + review.rating, 0);
         product.ratings = parseFloat((totalRatings / product.reviews.length).toFixed(1));
-        
-        console.log(product)
         await product.save();
       } catch (error) {
         console.error(`Error processing product review: ${error}`);
-        // Continue with next product even if one fails
       }
     }
 
     return res.json({ success: true, message: 'Review added successfully' });
   } catch (error) {
     console.error('Error adding review:', error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 };

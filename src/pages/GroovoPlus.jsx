@@ -215,7 +215,7 @@ const GroovoPlus = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-8 items-start">
           {/* Subscription Card */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 p-6">
@@ -285,7 +285,7 @@ const GroovoPlus = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
+                {/* <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg
                       className="w-4 h-4 text-purple-600"
@@ -310,7 +310,7 @@ const GroovoPlus = () => {
                       confirmation options
                     </p>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {hasActiveSubscription ? (

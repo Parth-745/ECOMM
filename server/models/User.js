@@ -31,6 +31,14 @@ const userschema=new mongoose.Schema({
     }
     ]
 ,
+    weeklyCart: [
+    {
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+        quantity: { type: Number, default: 1 },
+        size:{type:String},
+        skipNextDelivery: { type: Boolean, default: false }
+    }
+    ],
     order:[{type:mongoose.Schema.Types.ObjectId, ref:'Order'}],
     // Groovo Plus subscription fields
     isGroovoPlusActive: {

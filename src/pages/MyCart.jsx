@@ -5,7 +5,8 @@ import Navbar from "../components/Navbar";
 import { toast } from "react-hot-toast";
 
 const MyCart = () => {
-  const { cart, user, setcart } = useContext(FirebaseContext);
+  const { cart, weeklyCart, user, setcart, setweeklycart } =
+    useContext(FirebaseContext);
   const navigate = useNavigate();
 
   // Tab and Subscription state
@@ -69,6 +70,42 @@ const MyCart = () => {
     checkSubscriptionStatus();
   }, [user]);
 
+  useEffect(() => {
+    const fetchWeeklySchedule = async () => {
+      if (!user) {
+        setWeeklyDay("");
+        setWeeklyTime("");
+        setWeeklyEnabled(false);
+        return;
+      }
+
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch("http://localhost:4000/weekly-schedule", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.schedule) {
+          setWeeklyDay(data.schedule.deliveryDay || "");
+          setWeeklyTime(data.schedule.deliveryTimeSlot || "");
+          setWeeklyEnabled(true);
+        } else {
+          setWeeklyEnabled(false);
+        }
+      } catch (error) {
+        console.error("Error fetching weekly schedule:", error);
+      }
+    };
+
+    fetchWeeklySchedule();
+  }, [user]);
+
   const calculateTotal = () =>
     cart?.reduce(
       (total, item) => total + item.product?.price * item.quantity,
@@ -79,6 +116,10 @@ const MyCart = () => {
 
   // Save weekly schedule to backend
   const saveWeeklyScheduleToBackend = async () => {
+    if (!weeklyCart || weeklyCart.length === 0) {
+    toast.error("At least one item must be added to the weekly schedule");
+    return;
+    }
     if (!weeklyDay || !weeklyTime) {
       toast.error("Please select delivery day and time");
       return;
@@ -89,8 +130,19 @@ const MyCart = () => {
     try {
       const token = await user.getIdToken();
 
+      const activeWeeklyItems = weeklyCart.filter(
+        (item) => !item.skipNextDelivery,
+      );
+
+      if (activeWeeklyItems.length === 0) {
+        toast.error(
+          "All weekly items are skipped for the next delivery. Unskip or add another item.",
+        );
+        return;
+      }
+
       // Format weekly items from cart
-      const weeklyItems = cart.map((item) => ({
+      const weeklyItems = activeWeeklyItems.map((item) => ({
         productId: item.product._id,
         quantity: item.quantity,
       }));
@@ -111,15 +163,13 @@ const MyCart = () => {
       const data = await response.json();
 
       if (data.success) {
-        toast.success("Weekly schedule created successfully! Payment by default is Cash on Delivery.");
+        toast.success(
+          "Weekly schedule created successfully! Payment by default is Cash on Delivery.",
+        );
         setShowPaymentModal(false);
         setSelectedPaymentMethod("");
         setWeeklyEnabled(true);
-        // Reset form after success
-        setTimeout(() => {
-          setWeeklyDay("");
-          setWeeklyTime("");
-        }, 1500);
+        setweeklycart(data.weeklyCart || []);
       } else {
         toast.error(data.message || "Failed to create weekly schedule");
       }
@@ -130,6 +180,61 @@ const MyCart = () => {
       setIsSubmittingWeekly(false);
     }
   };
+
+  async function handleSkipWeekly() {
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("http://localhost:4000/weekly/skip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setweeklycart(data.weeklyCart || []);
+        toast.success(data.message || "Next delivery skipped");
+      } else {
+        toast.error(data.message || "Failed to skip next delivery");
+      }
+    } catch (error) {
+      console.error("Error skipping weekly delivery:", error);
+      toast.error("Failed to skip next delivery");
+    }
+  }
+
+  async function handleDeleteWeekly() {
+    const confirmed = window.confirm(
+      "Delete weekly cart items permanently? This cannot be undone.",
+    );
+    if (!confirmed) return;
+
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("http://localhost:4000/weekly/remove", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setweeklycart(data.weeklyCart || []);
+        toast.success(data.message || "Weekly cart updated");
+      } else {
+        toast.error(data.message || "Failed to remove weekly items");
+      }
+    } catch (error) {
+      console.error("Error deleting weekly items:", error);
+      toast.error("Failed to remove weekly items");
+    }
+  }
 
   // Update weekly schedule
   const updateWeeklyScheduleToBackend = async () => {
@@ -143,17 +248,20 @@ const MyCart = () => {
     try {
       const token = await user.getIdToken();
 
-      const response = await fetch("http://localhost:4000/weekly-schedule/time", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        "http://localhost:4000/weekly-schedule/time",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            deliveryDay: weeklyDay,
+            deliveryTimeSlot: weeklyTime,
+          }),
         },
-        body: JSON.stringify({
-          deliveryDay: weeklyDay,
-          deliveryTimeSlot: weeklyTime,
-        }),
-      });
+      );
 
       const data = await response.json();
 
@@ -161,11 +269,6 @@ const MyCart = () => {
         toast.success("Weekly schedule updated successfully!");
         setShowPaymentModal(false);
         setSelectedPaymentMethod("");
-        // Reset form after success
-        setTimeout(() => {
-          setWeeklyDay("");
-          setWeeklyTime("");
-        }, 1500);
       } else {
         // Check for 1-hour lock error
         if (data.message && data.message.includes("1 hour")) {
@@ -182,7 +285,7 @@ const MyCart = () => {
     }
   };
 
-  async function handleIncrease(item) {
+  async function handleIncrease(item, cartType = "regular") {
     try {
       const token = await user.getIdToken();
 
@@ -198,6 +301,7 @@ const MyCart = () => {
               productId: item.product._id,
               quantity: 1,
               size: item.size,
+              cartType: cartType,
             }),
           }),
           delay(1500), // ensures at least 1.5s delay
@@ -210,8 +314,12 @@ const MyCart = () => {
       const data = await response.json();
 
       if (data.success) {
-        // console.log(data.cart)
-        setcart(data.cart);
+        if (cartType === "weekly") {
+          setweeklycart(data.weeklyCart || []);
+        } else {
+          setcart(data.cart || []);
+          setweeklycart(data.weeklyCart || []);
+        }
         toast.success("Item added to cart!");
       } else {
         toast.error(data.message || "Add to cart failed.");
@@ -221,7 +329,7 @@ const MyCart = () => {
     }
   }
 
-  async function handleDecrease(item) {
+  async function handleDecrease(item, cartType = "regular") {
     try {
       const token = await user.getIdToken();
 
@@ -237,6 +345,7 @@ const MyCart = () => {
               productId: item.product._id,
               quantity: 1,
               size: item.size,
+              cartType: cartType,
             }),
           }),
           delay(1500), // ensures at least 1.5s delay
@@ -251,17 +360,20 @@ const MyCart = () => {
       const data = await response.json();
 
       if (data.success) {
-        console.log(data.cart);
-        setcart(data.cart);
+        if (cartType === "weekly") {
+          setweeklycart(data.weeklyCart || []);
+        } else {
+          setcart(data.cart || []);
+        }
       } else {
         toast.error(data.message || "Add to cart failed.");
       }
     } catch (e) {
-      console.error("Error adding to cart:", e);
+      console.error("Error deleting from cart:", e);
     }
   }
 
-  async function handleRemove(item) {
+  async function handleRemove(item, cartType = "regular") {
     try {
       const token = await user.getIdToken();
 
@@ -277,6 +389,7 @@ const MyCart = () => {
               productId: item.product._id,
               quantity: item.quantity,
               size: item.size,
+              cartType: cartType,
             }),
           }),
           delay(1500), // ensures at least 1.5s delay
@@ -291,17 +404,23 @@ const MyCart = () => {
       const data = await response.json();
 
       if (data.success) {
-        console.log(data.cart);
-        setcart(data.cart);
+        if (cartType === "weekly") {
+          setweeklycart(data.weeklyCart || []);
+        } else {
+          setcart(data.cart || []);
+        }
       } else {
         toast.error(data.message || "Add to cart failed.");
       }
     } catch (e) {
-      console.error("Error adding to cart:", e);
+      console.error("Error removing from cart:", e);
     }
   }
 
-  if (!cart || cart.length === 0) {
+  if (
+    (!cart || cart.length === 0) &&
+    (!weeklyCart || weeklyCart.length === 0)
+  ) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Navbar />
@@ -343,132 +462,84 @@ const MyCart = () => {
 
   // Render cart items section
   const CartItemsSection = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      {cart.map((item) => (
-                <div
-                  key={item._id}
-                  className="p-6 border-b border-gray-100 last:border-b-0 flex flex-col sm:flex-row gap-6 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="w-full sm:w-40 h-40 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    <img
-                      loading="lazy"
-                      src={item?.product?.imageUrl}
-                      alt={item?.product?.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src =
-                          "https://via.placeholder.com/300/1A2433/FFFFFF?text=Product";
-                      }}
-                    />
-                  </div>
+  <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    {cart.map((item) => (
+      <div
+        key={item._id}
+        className="p-6 border-b border-gray-100 last:border-b-0 flex flex-col sm:flex-row gap-6 hover:bg-gray-50 transition-colors"
+      >
+        {/* Product Image */}
+        <div className="w-full sm:w-40 h-40 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+          <img
+            loading="lazy"
+            src={item?.product?.imageUrl}
+            alt={item?.product?.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src =
+                "https://via.placeholder.com/300/1A2433/FFFFFF?text=Product";
+            }}
+          />
+        </div>
 
-                  <div className="flex-1 flex flex-col">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-semibold text-xl text-[#1A2433]">
-                          {item?.product?.name}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-gray-600">
-                            {item?.product?.category}
-                          </p>
-                          {/* {item.size && (
-                            <span className="text-gray-600">• Size: {item?.size}</span>
-                          )} */}
-                        </div>
-                        {item?.product?.offer && (
-                          <span className="inline-block bg-blue-50 text-blue-800 text-xs px-2 py-1 rounded-full mt-2">
-                            {item?.product?.offer}
-                          </span>
-                        )}
-                      </div>
-                      <p className="font-bold text-lg text-[#1A2433]">
-                        ₹{item?.product?.price?.toFixed(2)}
-                      </p>
-                    </div>
+        {/* Product Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Top Row */}
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="font-semibold text-xl text-[#1A2433]">
+                {item?.product?.name}
+              </h3>
 
-                    <div className="mt-auto pt-4 flex items-center justify-between">
-                      <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50">
-                        <button
-                          className="px-4 py-2 hover:bg-gray-100 text-gray-700 transition-colors cursor-pointer"
-                          onClick={() => handleDecrease(item)}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M20 12H4"
-                            />
-                          </svg>
-                        </button>
-                        <span className="px-4 text-gray-800">
-                          {item?.quantity}
-                        </span>
-                        <button
-                          className="px-4 py-2 hover:bg-gray-100 text-gray-700 transition-colors cursor-pointer"
-                          onClick={() => handleIncrease(item)}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 4v16m8-8H4"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                      <button
-                        className="text-red-600 hover:text-red-800 flex items-center gap-1 transition-colors cursor-pointer"
-                        onClick={() => handleRemove(item)}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <p className="text-gray-600 mt-1">
+                {item?.product?.category}
+              </p>
+
+              {item?.product?.offer && (
+                <span className="inline-block bg-blue-50 text-blue-800 text-xs px-2 py-1 rounded-full mt-2">
+                  {item?.product?.offer}
+                </span>
+              )}
             </div>
-          );
 
-  // Render weekly cart section
-  const WeeklyCartSection = () => {
-    if (!hasGroovoPlus) {
-      return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-12 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="mb-6 flex justify-center">
+            {/* Price */}
+            <p className="font-bold text-lg text-[#1A2433]">
+              ₹{item?.product?.price?.toFixed(2)}
+            </p>
+          </div>
+
+          {/* Bottom Row */}
+          <div className="mt-auto pt-4 flex items-center justify-between">
+            {/* Quantity Controls */}
+            <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50">
+              <button
+                className="px-4 py-2 hover:bg-gray-100 text-gray-700 transition-colors cursor-pointer"
+                onClick={() => handleDecrease(item, "regular")}
+              >
+                −
+              </button>
+
+              <span className="px-4 text-gray-800 font-medium">
+                {item?.quantity}
+              </span>
+
+              <button
+                className="px-4 py-2 hover:bg-gray-100 text-gray-700 transition-colors cursor-pointer"
+                onClick={() => handleIncrease(item, "regular")}
+              >
+                +
+              </button>
+            </div>
+
+            {/* Remove Button */}
+            <button
+              className="text-red-600 hover:text-red-800 flex items-center gap-1 transition-colors cursor-pointer"
+              onClick={() => handleRemove(item, "regular")}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-24 w-24 text-gray-400"
+                className="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -477,22 +548,34 @@ const MyCart = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={1.5}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                 />
               </svg>
-            </div>
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+
+  // Render weekly cart section
+  const WeeklyCartSection = () => {
+    if (!hasGroovoPlus) {
+      return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-12 text-center">
+          <div className="max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
               Weekly Cart Locked
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-grey-600 mb-6">
               Weekly Cart is available only for Groovo Plus members.
-            </p>
-            <p className="text-gray-500 text-sm mb-8">
-              Upgrade to Groovo Plus to unlock weekly recurring deliveries with exclusive benefits.
             </p>
             <Link
               to="/groovo-plus"
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200"
+              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg"
             >
               Get Groovo Plus
             </Link>
@@ -504,9 +587,9 @@ const MyCart = () => {
     // Weekly cart with Groovo Plus
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {cart && cart.length > 0 ? (
+        {weeklyCart && weeklyCart.length > 0 ? (
           <>
-            {cart.map((item) => (
+            {weeklyCart.map((item) => (
               <div
                 key={item._id}
                 className="p-6 border-b border-gray-100 last:border-b-0 flex flex-col sm:flex-row gap-6 hover:bg-gray-50 transition-colors"
@@ -541,21 +624,81 @@ const MyCart = () => {
                           {item?.product?.offer}
                         </span>
                       )}
+                      {item?.skipNextDelivery && (
+                        <span className="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full mt-2 ml-2">
+                          Skipped Next Delivery
+                        </span>
+                      )}
                     </div>
                     <p className="font-bold text-lg text-[#1A2433]">
                       ₹{item?.product?.price?.toFixed(2)}
                     </p>
                   </div>
 
-                  <div className="mt-auto pt-4 flex items-center gap-4">
+                  <div className="mt-auto pt-4 flex items-center justify-between">
                     <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50">
-                      <span className="px-4 py-2 text-gray-800 font-medium">
+                      <button
+                        className="px-4 py-2 hover:bg-gray-100 text-gray-700 transition-colors cursor-pointer"
+                        onClick={() => handleDecrease(item, "weekly")}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M20 12H4"
+                          />
+                        </svg>
+                      </button>
+                      <span className="px-4 text-gray-800 font-medium">
                         {item?.quantity}
                       </span>
+                      <button
+                        className="px-4 py-2 hover:bg-gray-100 text-gray-700 transition-colors cursor-pointer"
+                        onClick={() => handleIncrease(item, "weekly")}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                      </button>
                     </div>
-                    <span className="text-sm text-gray-600">
-                      Total: ₹{(item.product?.price * item?.quantity).toFixed(2)}
-                    </span>
+                    <button
+                      className="text-red-600 hover:text-red-800 flex items-center gap-1 transition-colors cursor-pointer"
+                      onClick={() => handleRemove(item, "weekly")}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Remove
+                    </button>
                   </div>
                 </div>
               </div>
@@ -563,7 +706,9 @@ const MyCart = () => {
           </>
         ) : (
           <div className="p-12 text-center">
-            <p className="text-gray-600">No items in your regular cart to add to weekly delivery.</p>
+            <p className="text-gray-600">
+              No items in your cart for weekly delivery.
+            </p>
           </div>
         )}
       </div>
@@ -631,16 +776,22 @@ const MyCart = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Content */}
-          <div className="lg:w-2/3">
-            {activeTab === "cart" ? <CartItemsSection /> : <WeeklyCartSection />}
+        <div className="grid lg:grid-cols-3 gap-8 items-start">
+          {/* LEFT: Cart / Weekly Items */}
+          <div className="lg:col-span-2">
+            {activeTab === "cart" ? (
+              <CartItemsSection />
+            ) : (
+              <WeeklyCartSection />
+            )}
           </div>
-          <div className="lg:w-1/3">
+          <div className="lg:col-span-1">
             <div className="bg-[#1A2433] rounded-xl shadow-lg text-white sticky top-8">
-              <div className="p-6 border-b border-gray-700">
+              <div className="p-3 border-b border-gray-700">
                 <h2 className="text-xl font-bold">
-                  {activeTab === "cart" ? "Order Summary" : "Weekly Delivery Setup"}
+                  {activeTab === "cart"
+                    ? "Order Summary"
+                    : "Weekly Delivery Setup"}
                 </h2>
                 <p className="text-gray-300 text-sm mt-1">
                   {activeTab === "cart"
@@ -698,33 +849,11 @@ const MyCart = () => {
                     className="w-full bg-white hover:bg-gray-100 text-[#1A2433] font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                     onClick={() => {
                       navigate("/payment");
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                    />
-                  </svg>
-                  Proceed to Checkout
-                </button>
-
-                <div className="mt-4 text-center">
-                  <Link
-                    to="/"
-                    className="text-gray-300 hover:text-white hover:underline inline-flex items-center gap-1 transition-colors"
+                    }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
+                      className="h-5 w-5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -733,27 +862,52 @@ const MyCart = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                       />
                     </svg>
-                    Continue Shopping
-                  </Link>
-                </div>
+                    Proceed to Checkout
+                  </button>
+
+                  <div className="mt-4 text-center">
+                    <Link
+                      to="/"
+                      className="text-gray-300 hover:text-white hover:underline inline-flex items-center gap-1 transition-colors"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        />
+                      </svg>
+                      Continue Shopping
+                    </Link>
+                  </div>
                 </div>
               ) : (
-                <div className="p-6">
+                <div className="p-3">
                   {hasGroovoPlus && (
-                    <div className="space-y-4">
+                    <div className="space-y-5">
+                      {/* Delivery Day */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-600 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Delivery Day
                         </label>
                         <select
                           value={weeklyDay}
                           onChange={(e) => setWeeklyDay(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-[#1A2433]"
+                          className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          <option value="">Select a day</option>
+                          <option value="" className="text-gray-400">
+                            Select a day
+                          </option>
                           <option value="Monday">Monday</option>
                           <option value="Tuesday">Tuesday</option>
                           <option value="Wednesday">Wednesday</option>
@@ -764,16 +918,19 @@ const MyCart = () => {
                         </select>
                       </div>
 
+                      {/* Delivery Time */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-600 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Delivery Time Slot
                         </label>
                         <select
                           value={weeklyTime}
                           onChange={(e) => setWeeklyTime(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-[#1A2433]"
+                          className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          <option value="">Select a time slot</option>
+                          <option value="" className="text-gray-400">
+                            Select a time slot
+                          </option>
                           <option value="8:00 AM - 10:00 AM">
                             8:00 AM - 10:00 AM
                           </option>
@@ -783,10 +940,31 @@ const MyCart = () => {
                           <option value="12:00 PM - 2:00 PM">
                             12:00 PM - 2:00 PM
                           </option>
-                          <option value="2:00 PM - 4:00 PM">2:00 PM - 4:00 PM</option>
-                          <option value="4:00 PM - 6:00 PM">4:00 PM - 6:00 PM</option>
-                          <option value="6:00 PM - 8:00 PM">6:00 PM - 8:00 PM</option>
+                          <option value="2:00 PM - 4:00 PM">
+                            2:00 PM - 4:00 PM
+                          </option>
+                          <option value="4:00 PM - 6:00 PM">
+                            4:00 PM - 6:00 PM
+                          </option>
+                          <option value="6:00 PM - 8:00 PM">
+                            6:00 PM - 8:00 PM
+                          </option>
                         </select>
+                      </div>
+                      <div classname="flex justify-between gap-4">
+                        <button
+                          className="w-40  bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-3xl transition "
+                          onClick={handleSkipWeekly}
+                        >
+                          Skip 
+                        </button>
+
+                        <button
+                          className="w-40 bg-red-600 hover:bg-red-700 text-white py-2 rounded-3xl transition ml-6"
+                          onClick={handleDeleteWeekly}
+                        >
+                          Delete
+                        </button>
                       </div>
 
                       {weeklyDay && weeklyTime && (
@@ -800,7 +978,7 @@ const MyCart = () => {
                         </div>
                       )}
 
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      {/* <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                         <div className="flex items-start gap-3">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -821,11 +999,13 @@ const MyCart = () => {
                               How Weekly Cart Works
                             </h3>
                             <p className="text-sm text-yellow-700 mt-1">
-                              Items in your regular cart will be automatically delivered every week on your chosen day and time. You can modify this anytime.
+                              Items in your regular cart will be automatically
+                              delivered every week on your chosen day and time.
+                              You can modify this anytime.
                             </p>
                           </div>
                         </div>
-                      </div>
+                      </div> */}
 
                       {weeklyDay && weeklyTime && (
                         <div className="space-y-4 mt-4">
@@ -850,12 +1030,14 @@ const MyCart = () => {
                                   Payment Method
                                 </h3>
                                 <p className="text-sm text-green-700 mt-1">
-                                  Weekly deliveries are paid by <strong>Cash on Delivery (COD)</strong> by default. No advance payment required.
+                                  Weekly deliveries are paid by{" "}
+                                  <strong>Cash on Delivery (COD)</strong> by
+                                  default. No advance payment required.
                                 </p>
                               </div>
                             </div>
                           </div>
-                          
+
                           <button
                             className="w-full bg-white hover:bg-gray-100 text-[#1A2433] font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                             onClick={() => saveWeeklyScheduleToBackend()}

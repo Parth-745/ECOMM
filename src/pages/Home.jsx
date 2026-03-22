@@ -194,7 +194,7 @@ const Home = () => {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium mb-2">Free Shipping</h3>
-                <p className="text-gray-600">On all orders over ₹50</p>
+                <p className="text-gray-600">On all orders over ₹300</p>
               </div>
 
               {/* Customer Support */}

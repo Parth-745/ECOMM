@@ -4,6 +4,11 @@ const Product = require('../models/Product');
 const mailSender = require('../util/mailSender');
 const { calculateOrderTotal } = require('../util/priceCalculator');
 
+const NON_SUBSCRIPTION_ORDER_FILTER = {
+    isSubscription: { $ne: true },
+    'products.0': { $exists: true }
+};
+
 exports.createOrder = async (req, res) => {
     try {
         const { address, isCOD, isSubscription, amount } = req.body;
@@ -64,7 +69,8 @@ exports.createOrder = async (req, res) => {
                 userPhone: user.phone || '',
                 userEmail: user.email || '',
                 paymentMethod: isCOD ? 'Cash on Delivery' : 'Online Payment',
-                paymentStatus: isCOD ? 'Unpaid' : 'Paid'
+                paymentStatus: isCOD ? 'Unpaid' : 'Paid',
+                isSubscription: false
             };
         }
 
@@ -153,7 +159,9 @@ exports.getMyOrders=async(req,res)=>{
 
 exports.getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find().populate('userId', 'username email').populate('products.product');
+        const orders = await Order.find(NON_SUBSCRIPTION_ORDER_FILTER)
+            .populate('userId', 'username email')
+            .populate('products.product');
 
         if (orders.length === 0) {
             return res.status(200).json({ success:true,message: 'No orders found', orders: [] });
@@ -326,13 +334,14 @@ exports.getDeliveryAgentOrders = async (req, res) => {
         const deliveryAgentId = req.payload.id;
         const status = req.query.status || 'pending';
 
-        let query = {};
+        let query = { ...NON_SUBSCRIPTION_ORDER_FILTER };
         
         if (status === 'pending') {
             // ✅ Show orders that:
             // - Don't have an assigned agent (truly pending)
             // - This agent hasn't rejected yet
             query = {
+                ...NON_SUBSCRIPTION_ORDER_FILTER,
                 deliveryAgent: null,                          
                 rejectedBy: { 
                     $not: { $elemMatch: { agentId: deliveryAgentId } } // Agent didn't reject
@@ -342,12 +351,14 @@ exports.getDeliveryAgentOrders = async (req, res) => {
         } else if (status === 'accepted') {
             // Get orders accepted by THIS agent
             query = { 
+                ...NON_SUBSCRIPTION_ORDER_FILTER,
                 deliveryAgent: deliveryAgentId,
                 deliveryStatus: 'accepted'
             };
         } else if (status === 'rejected') {
             // ✅ Get orders rejected by THIS agent (agent-specific)
             query = {
+                ...NON_SUBSCRIPTION_ORDER_FILTER,
                 rejectedBy: { 
                     $elemMatch: { agentId: deliveryAgentId } // Only this agent's rejections
                 }

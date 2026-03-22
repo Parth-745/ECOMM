@@ -21,8 +21,11 @@ import toast from 'react-hot-toast';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const { user, logout, cart } = useContext(FirebaseContext);
+  const { user, logout, cart, weeklyCart } = useContext(FirebaseContext);
   const navigate = useNavigate();
+  const totalCartItems =
+  (cart?.reduce((sum, item) => sum + item.quantity, 0) || 0) +
+  (weeklyCart?.reduce((sum, item) => sum + item.quantity, 0) || 0);
 
   return (
     <nav className="bg-white shadow-md fixed top-0 w-full z-50">
@@ -71,12 +74,12 @@ const Navbar = () => {
                 <span className="ml-1 text-sm">My Cart</span>
                 <div className="relative ml-1">
                   <FiShoppingCart className="h-6 w-6" />
-                  {user && cart?.length > 0 && (
+                  {user && totalCartItems > 0 && (
                     <>
                       <span className="absolute -top-2 -right-3 bg-black text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transition-all duration-300">
-                        {cart.length > 99 ? '99+' : cart.length}
+                        {totalCartItems > 99 ? '99+' : totalCartItems}
                       </span>
-                      <span className="sr-only">{cart.length} items in cart</span>
+                      <span className="sr-only">{totalCartItems} items in cart</span>
                     </>
                   )}
                 </div>

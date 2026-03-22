@@ -14,10 +14,9 @@ exports.isUser = async (req, res, next) => {
   }
   
   const token = authHeader.split(" ")[1];
-  console.log(token);
   try {
     const decoded = await admin.auth().verifyIdToken(token);
-    console.log("Decoded Firebase token:", decoded);
+    // console.log("Decoded Firebase token:", decoded);
     req.payload = decoded;
     // console.log("Decoded payload:", decoded);
     next();

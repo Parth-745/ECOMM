@@ -75,7 +75,7 @@ const DeliveryAgentDashboard = () => {
 
             <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
               <h3 className="text-gray-700 text-sm font-semibold mb-2">Completed Today</h3>
-              <p className="text-4xl font-bold text-green-600">0</p>
+              <p className="text-4xl font-bold text-green-600">1</p>
               <p className="text-gray-600 text-xs mt-2">Deliveries completed</p>
             </div>
 

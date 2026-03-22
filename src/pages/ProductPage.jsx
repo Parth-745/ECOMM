@@ -11,36 +11,80 @@ import ShowProducts from '../components/ShowProducts';
 const ProductPage = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const { user, setcart, products } = useContext(FirebaseContext);
+  const { user, setcart, setweeklycart, products } = useContext(FirebaseContext);
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState('US 8');
   const [quantity, setQuantity] = useState(1);
   const [showSizeChart, setShowSizeChart] = useState(false);
+  const [hasGroovoPlus, setHasGroovoPlus] = useState(false);
+  const [showCartOptions, setShowCartOptions] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  const fetchProduct = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/getProductDetail/${productId}`);
+      const data = await response.json();
+      if (data.success) {
+        setProduct(data.product);
+      } else {
+        navigate('/products');
+        toast.error('Product not found');
+      }
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      toast.error('Failed to load product');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch single product data
   useEffect(() => {
-    const fetchProduct = async () => {
+    fetchProduct();
+  }, [productId, navigate]);
+
+  useEffect(() => {
+    const checkSubscriptionStatus = async () => {
+      if (!user) {
+        setHasGroovoPlus(false);
+        return;
+      }
+
       try {
-        const response = await fetch(`http://localhost:4000/getProductDetail/${productId}`);
+        const token = await user.getIdToken();
+        const response = await fetch("http://localhost:4000/fetchUserData", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         const data = await response.json();
-        console.log(data.product.reviews)
         if (data.success) {
-          setProduct(data.product);
+          const userData = data.user;
+          const isActive =
+            userData.isGroovoPlusActive &&
+            userData.subscriptionStartDate &&
+            userData.subscriptionEndDate &&
+            new Date() >= new Date(userData.subscriptionStartDate) &&
+            new Date() <= new Date(userData.subscriptionEndDate);
+
+          setHasGroovoPlus(isActive);
         } else {
-          navigate('/products');
-          toast.error('Product not found');
+          setHasGroovoPlus(false);
         }
       } catch (error) {
-        console.error("Error fetching product:", error);
-        toast.error('Failed to load product');
-      } finally {
-        setLoading(false);
+        console.error("Error checking subscription status:", error);
+        setHasGroovoPlus(false);
       }
     };
 
-    fetchProduct();
-  }, [productId, navigate]);
+    checkSubscriptionStatus();
+  }, [user]);
 
   // Get related products (same category)
   const relatedProducts = products
@@ -50,8 +94,18 @@ const ProductPage = () => {
       ).slice(0, 4)
     : [];
 
-  async function addToCart() {
+  async function addToCart(cartType = 'regular') {
     try {
+      if (!user) {
+        toast.error("Please login to add items to cart.");
+        return;
+      }
+
+      if (product.quantity <= 0) {
+        toast.error("This product is out of stock");
+        return;
+      }
+
       const token = await user.getIdToken();
       const [response] = await toast.promise(
         Promise.all([
@@ -64,26 +118,95 @@ const ProductPage = () => {
             body: JSON.stringify({
               productId: product._id,
               quantity: quantity,
-              size: selectedSize
+              size: selectedSize,
+              cartType
             }),
           }),
           new Promise(resolve => setTimeout(resolve, 1500))
         ]),
         {
-          loading: 'Adding to cart...',
-          success: 'Item added to cart!',
+          loading: cartType === 'weekly' ? 'Adding to weekly cart...' : 'Adding to cart...',
+          success: cartType === 'weekly' ? 'Item added to weekly cart!' : 'Item added to cart!',
           error: 'Failed to add item',
         }
       );
 
       const data = await response.json();
       if (data.success) {
-        setcart(data.cart);
+        if (cartType === 'weekly') {
+          setweeklycart(data.weeklyCart || []);
+        } else {
+          setcart(data.cart || []);
+        }
+        setShowCartOptions(false);
       }
     } catch (e) {
       console.error("Error adding to cart:", e);
     }
   }
+
+  const handleAddToCartClick = () => {
+    if (!user) {
+      toast.error("Please login to add items to cart.");
+      return;
+    }
+
+    if (product.quantity <= 0) {
+      toast.error("This product is out of stock");
+      return;
+    }
+
+    if (hasGroovoPlus) {
+      setShowCartOptions(true);
+      return;
+    }
+
+    addToCart('regular');
+  };
+
+  const submitProductReview = async () => {
+    try {
+      if (!user) {
+        toast.error('Please login to add a review');
+        return;
+      }
+
+      if (!reviewRating) {
+        toast.error('Please select a rating');
+        return;
+      }
+
+      setIsSubmittingReview(true);
+      const token = await user.getIdToken();
+      const response = await fetch('http://localhost:4000/AddReview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: product._id,
+          rating: reviewRating,
+          comment: reviewComment,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success('Review added successfully!');
+        setReviewRating(0);
+        setReviewComment('');
+        await fetchProduct();
+      } else {
+        toast.error(data.message || 'Failed to add review');
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast.error('Failed to submit review');
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -198,19 +321,73 @@ const ProductPage = () => {
               </div>
             </div>
             
-            {/* Add to Cart Button */}
-            <button
-              onClick={addToCart}
-              className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 cursor-pointer"
-            >
-              <FaShoppingCart />
-              <span>Add to Cart</span>
-            </button>
+            {showCartOptions ? (
+              <div className="w-full space-y-2">
+                <button
+                  onClick={() => addToCart('regular')}
+                  className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+                >
+                  <FaShoppingCart />
+                  <span>Cart</span>
+                </button>
+                <button
+                  onClick={() => addToCart('weekly')}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+                >
+                  <span>Weekly</span>
+                </button>
+                <button
+                  onClick={() => setShowCartOptions(false)}
+                  className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleAddToCartClick}
+                className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+              >
+                <FaShoppingCart />
+                <span>Add to Cart</span>
+              </button>
+            )}
           </div>
         </div>
 
         <div className="mt-16">
           <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
+
+          <div className="bg-white p-6 rounded-lg shadow mb-6">
+            <h3 className="text-lg font-semibold mb-3">Write a Review</h3>
+            <div className="flex mb-3">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setReviewRating(star)}
+                  className="mr-1"
+                >
+                  <FaStar
+                    className={`w-5 h-5 ${reviewRating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+                  />
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={reviewComment}
+              onChange={(e) => setReviewComment(e.target.value)}
+              placeholder="Write your review..."
+              className="w-full p-3 border border-gray-300 rounded-md mb-3"
+            />
+            <button
+              onClick={submitProductReview}
+              disabled={isSubmittingReview}
+              className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors disabled:opacity-60"
+            >
+              {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+            </button>
+          </div>
           
           {product.reviews?.length > 0 ? (
             <div className="space-y-6">

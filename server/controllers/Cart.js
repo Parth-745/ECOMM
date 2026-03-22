@@ -2,7 +2,7 @@ const User=require('../models/User');
 
 exports.addToCart = async (req, res) => {
     try {
-        const { productId, quantity, size } = req.body;
+        const { productId, quantity, size, cartType = 'regular' } = req.body;
         if (!productId || !quantity) {
             return res.status(400).json({
                 success: false,
@@ -10,8 +10,11 @@ exports.addToCart = async (req, res) => {
             });
         }
 
-        // First find the user without populating
-        let user = await User.findOne({ firebaseUid: req.payload.uid }).populate('cart.product');
+        const targetCartKey = cartType === 'weekly' ? 'weeklyCart' : 'cart';
+
+        let user = await User.findOne({ firebaseUid: req.payload.uid })
+            .populate('cart.product')
+            .populate('weeklyCart.product');
         
         if (!user) {
             return res.status(404).json({
@@ -20,32 +23,41 @@ exports.addToCart = async (req, res) => {
             });
         }
 
-        const existingProductIndex = user.cart.findIndex(
+        if (!Array.isArray(user[targetCartKey])) {
+            user[targetCartKey] = [];
+        }
+        const targetCart = user[targetCartKey];
+
+        const existingProductIndex = targetCart.findIndex(
             item => item.product._id.toString() === productId && item.size === size
         );
         if (existingProductIndex > -1) {
-            if(user.cart[existingProductIndex].product.quantity <= user.cart[existingProductIndex].quantity){ 
+            if(targetCart[existingProductIndex].product.quantity <= targetCart[existingProductIndex].quantity){ 
                 return res.status(400).json({
                     success: false,
                     message: "We don't have enough stock for this product",
                 });
             }
-            user.cart[existingProductIndex].quantity += quantity;
+            targetCart[existingProductIndex].quantity += quantity;
         } else {
-            user.cart.push({ product: productId, quantity: quantity, size: size });
+            targetCart.push({ product: productId, quantity: quantity, size: size });
         }
 
         // Save the user first
         await user.save();
 
-        // Then find the user again with populated cart
+        // Then find the user again with populated carts
         user = await User.findOne({ firebaseUid: req.payload.uid })
-            .populate('cart.product');
+            .populate('cart.product')
+            .populate('weeklyCart.product');
 
         return res.status(200).json({
             success: true,
-            message: "Product added to cart successfully",
+            message: cartType === 'weekly'
+                ? "Product added to weekly cart successfully"
+                : "Product added to cart successfully",
             cart: user.cart,
+            weeklyCart: user.weeklyCart,
         });
     }
     catch (e) {
@@ -59,7 +71,8 @@ exports.addToCart = async (req, res) => {
 
 exports.deleteFromCart = async (req, res) => {
     try {
-        const { productId, quantity, size } = req.body;
+        const { productId, quantity, size, cartType = 'regular' } = req.body;
+        const targetCartKey = cartType === 'weekly' ? 'weeklyCart' : 'cart';
 
         // Input validation
         if (!productId || !quantity || !size) {
@@ -85,8 +98,10 @@ exports.deleteFromCart = async (req, res) => {
             });
         }
 
-        // Find item in cart
-        const existingProductIndex = user.cart.findIndex(
+        const targetCart = user[targetCartKey] || [];
+
+        // Find item in target cart
+        const existingProductIndex = targetCart.findIndex(
             item => item.product.toString() === productId && item.size === size
         );
 
@@ -98,21 +113,23 @@ exports.deleteFromCart = async (req, res) => {
         }
 
         // Update or remove item
-        if (user.cart[existingProductIndex].quantity <= quantity) {
-            user.cart.splice(existingProductIndex, 1);
+        if (targetCart[existingProductIndex].quantity <= quantity) {
+            targetCart.splice(existingProductIndex, 1);
         } else {
-            user.cart[existingProductIndex].quantity -= quantity;
+            targetCart[existingProductIndex].quantity -= quantity;
         }
 
         await user.save();
 
-        // Optionally populate here if you need product details in response
-        const updatedUser = await User.findById(user._id).populate('cart.product');
+        const updatedUser = await User.findById(user._id)
+            .populate('cart.product')
+            .populate('weeklyCart.product');
 
         return res.status(200).json({
             success: true,
             message: "Product updated in cart",
-            cart: updatedUser.cart
+            cart: updatedUser.cart,
+            weeklyCart: updatedUser.weeklyCart
         });
     } catch (e) {
         console.error("Error deleting from cart:", e);
@@ -125,7 +142,9 @@ exports.deleteFromCart = async (req, res) => {
 
 exports.getCartItems=async(req,res)=>{
     try{
-        const user=await User.findOne({firebaseUid:req.payload.uid}).populate('cart.product');
+        const user=await User.findOne({firebaseUid:req.payload.uid})
+            .populate('cart.product')
+            .populate('weeklyCart.product');
 
         if(!user){
             return res.status(404).json({
@@ -134,18 +153,11 @@ exports.getCartItems=async(req,res)=>{
             });
         }
 
-        if(user.cart.length === 0){
-            return res.status(200).json({
-                success:true,
-                message:"Cart is empty",
-                cart: [],
-            });
-        }
-
         return res.status(200).json({
             success:true,
             message:"Cart items fetched successfully",
             cart:user.cart,
+            weeklyCart:user.weeklyCart || [],
         });
     }
     catch(e){
@@ -156,3 +168,132 @@ exports.getCartItems=async(req,res)=>{
         });
     }
 }
+
+exports.skipWeeklyDeliveryItem = async (req, res) => {
+    try {
+        const { productId, size } = req.body;
+
+        const user = await User.findOne({ firebaseUid: req.payload.uid });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        if (!Array.isArray(user.weeklyCart) || user.weeklyCart.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Weekly cart is empty",
+            });
+        }
+
+        let updatedCount = 0;
+
+        if (productId) {
+            const index = user.weeklyCart.findIndex(
+                (item) =>
+                    item.product.toString() === productId &&
+                    (!size || item.size === size),
+            );
+
+            if (index === -1) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Product not found in weekly cart",
+                });
+            }
+
+            user.weeklyCart[index].skipNextDelivery = true;
+            updatedCount = 1;
+        } else {
+            user.weeklyCart.forEach((item) => {
+                item.skipNextDelivery = true;
+                updatedCount += 1;
+            });
+        }
+
+        await user.save();
+
+        const updatedUser = await User.findById(user._id).populate('weeklyCart.product');
+
+        return res.status(200).json({
+            success: true,
+            message:
+                updatedCount === 1
+                    ? "Item will be skipped for next delivery"
+                    : "All weekly items will be skipped for next delivery",
+            weeklyCart: updatedUser.weeklyCart || [],
+        });
+    } catch (e) {
+        console.error("Error skipping weekly delivery item:", e);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while skipping weekly item",
+        });
+    }
+};
+
+exports.removeWeeklyDeliveryItem = async (req, res) => {
+    try {
+        const { productId, size } = req.body;
+
+        const user = await User.findOne({ firebaseUid: req.payload.uid });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        if (!Array.isArray(user.weeklyCart) || user.weeklyCart.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Weekly cart is empty",
+            });
+        }
+
+        let removedCount = 0;
+
+        if (productId) {
+            const previousLength = user.weeklyCart.length;
+            user.weeklyCart = user.weeklyCart.filter(
+                (item) =>
+                    !(
+                        item.product.toString() === productId &&
+                        (!size || item.size === size)
+                    ),
+            );
+            removedCount = previousLength - user.weeklyCart.length;
+        } else {
+            removedCount = user.weeklyCart.length;
+            user.weeklyCart = [];
+        }
+
+        if (removedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found in weekly cart",
+            });
+        }
+
+        await user.save();
+
+        const updatedUser = await User.findById(user._id).populate('weeklyCart.product');
+
+        return res.status(200).json({
+            success: true,
+            message:
+                removedCount === 1
+                    ? "Item removed from weekly cart"
+                    : "Weekly cart cleared successfully",
+            weeklyCart: updatedUser.weeklyCart || [],
+        });
+    } catch (e) {
+        console.error("Error removing weekly delivery item:", e);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while removing weekly item",
+        });
+    }
+};

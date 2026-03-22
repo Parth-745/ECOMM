@@ -3,7 +3,13 @@ const router = express.Router();
 const { SendOtp ,register,login,MatchOtp, AdminLogin,AdminSignup, getUser, DeliveryAgentLogin, DeliveryAgentSignup, getDeliveryAgentData, updateDeliveryAgentDetails, activateGroovoPlus} = require('../controllers/Auth');
 const {addProduct, editProduct,deleteProduct,getAllProducts,getAllCategories,getProductDetail,AddReview,seedDatabase}=require('../controllers/Product');
 const { isUser, isAdmin,isUser2, isDeliveryAgent } = require('../middlewares/Auth');
-const {addToCart,deleteFromCart,getCartItems}= require('../controllers/Cart');
+const {
+  addToCart,
+  deleteFromCart,
+  getCartItems,
+  skipWeeklyDeliveryItem,
+  removeWeeklyDeliveryItem
+}= require('../controllers/Cart');
 const {createOrder,cancelOrder,getMyOrders,getAllOrders,approveOrder, getAddress, saveAddress, getOrderById,saveUserDetails, fetchUserData, getDeliveryAgentOrders, acceptDeliveryOrder, rejectDeliveryOrder, generateDeliveryOTP, verifyDeliveryOTP, verifyPayment} = require('../controllers/Order');
 const {
   saveWeeklySchedule,
@@ -37,6 +43,8 @@ router.post('/AddReview',isUser, AddReview);
 router.post('/addtoCart', isUser,addToCart);
 router.post('/deleteFromCart', isUser,deleteFromCart);
 router.get('/getCartItems', isUser,getCartItems);
+router.post('/weekly/skip', isUser, skipWeeklyDeliveryItem);
+router.delete('/weekly/remove', isUser, removeWeeklyDeliveryItem);
 
 router.post('/createOrder', isUser, createOrder);
 router.post('/cancelOrder', isUser, cancelOrder);

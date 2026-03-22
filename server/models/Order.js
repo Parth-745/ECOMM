@@ -62,6 +62,22 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: ['Paid', 'Unpaid', 'Pending'],
         default: 'Unpaid'
+    },
+    isSubscription: {
+        type: Boolean,
+        default: false
+    },
+    isWeeklyOrder: {
+        type: Boolean,
+        default: false
+    },
+    weeklyDeliveryDay: {
+        type: String,
+        default: null
+    },
+    weeklyDeliveryTimeSlot: {
+        type: String,
+        default: null
     }
 })
 

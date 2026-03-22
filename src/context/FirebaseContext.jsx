@@ -28,6 +28,7 @@ export default function FirebaseContextProvider({ children }) {
 
   const [user, setUser] = useState(null);
   const [cart,setcart]=useState([]);
+  const [weeklyCart, setweeklycart]=useState([]);
   const [products,setproducts]=useState([]);
   const [category,setcategory]=useState([]);
 
@@ -99,7 +100,8 @@ export default function FirebaseContextProvider({ children }) {
     const data = await response.json();
     console.log("Cart data fetched:", data);
     if (data.success) {
-      setcart(data.cart);
+      setcart(data.cart || []);
+      setweeklycart(data.weeklyCart || []);
     } else {
       console.error("Failed to fetch cart data:", data.message);
       toast.error("Failed to fetch cart data.");
@@ -115,6 +117,7 @@ export default function FirebaseContextProvider({ children }) {
       fetchCartData();
     } else {
       setcart([]);
+      setweeklycart([]);
     }
   },[user]);
   useEffect(() => {
@@ -186,6 +189,8 @@ export default function FirebaseContextProvider({ children }) {
     setloading,
     cart,
     setcart,
+    weeklyCart,
+    setweeklycart,
     products,
     category
   };

@@ -205,10 +205,10 @@ const Auth = () => {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#1A2433]">
      
-      <div className="seamless-scroller">
+      {/* <div className="seamless-scroller">
         <div className="scroll-layer"></div>
         <div className="scroll-layer"></div>
-      </div>
+      </div> */}
 
       {!login && (
         <div className="relative flex justify-center items-center min-h-screen bg-opacity-50 backdrop-blur-xs z-[1]">
